@@ -28,14 +28,14 @@ public:
         reader.read<endian::u8>().expect_eq(0x47); // sýnc byte
 
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 1, 13>()
-            .read<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
-            .read<1>(ts_packet->m_payload_unit_start_indicator)
-            .read<2>(ts_packet->m_transport_priority)
-            .read<3>(ts_packet->m_pid);
+        .read<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
+        .read<1>(ts_packet->m_payload_unit_start_indicator)
+        .read<2>(ts_packet->m_transport_priority)
+        .read<3>(ts_packet->m_pid);
         reader.read_bits<endian::u8, bitter::msb0, 2, 2, 4>()
-            .read<0>(ts_packet->m_transport_scrambling_control)
-            .read<1>(ts_packet->m_adaptation_field_control)
-            .read<2>(ts_packet->m_continuity_counter);
+        .read<0>(ts_packet->m_transport_scrambling_control)
+        .read<1>(ts_packet->m_adaptation_field_control)
+        .read<2>(ts_packet->m_continuity_counter);
 
         if (reader.error())
         {
@@ -109,13 +109,13 @@ public:
 
 private:
 
-    bool m_transport_error_indicator;
-    bool m_payload_unit_start_indicator;
-    bool m_transport_priority;
-    uint16_t m_pid;
-    uint8_t m_transport_scrambling_control;
-    uint8_t m_adaptation_field_control;
-    uint8_t m_continuity_counter;
+    bool m_transport_error_indicator = false;
+    bool m_payload_unit_start_indicator = false;
+    bool m_transport_priority = false;
+    uint16_t m_pid = 0;
+    uint8_t m_transport_scrambling_control = 0;
+    uint8_t m_adaptation_field_control = 0;
+    uint8_t m_continuity_counter = 0;
 
     std::shared_ptr<mts::adaptation_field> m_adaptation_field;
 };

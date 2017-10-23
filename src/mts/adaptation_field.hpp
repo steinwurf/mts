@@ -29,23 +29,23 @@ public:
         auto adaptation_field = reader.skip(field->m_length);
 
         adaptation_field
-            .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 1, 1, 1, 1, 1>()
-                .read<0>(field->m_discontinuity_indicator)
-                .read<1>(field->m_random_access_indicator)
-                .read<2>(field->m_elementary_stream_priority_indicator)
-                .read<3>(field->m_pcr_flag)
-                .read<4>(field->m_opcr_flag)
-                .read<5>(field->m_splicing_point_flag)
-                .read<6>(field->m_transport_private_data_flag)
-                .read<7>(field->m_adaptation_field_extension_flag);
+        .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 1, 1, 1, 1, 1>()
+        .read<0>(field->m_discontinuity_indicator)
+        .read<1>(field->m_random_access_indicator)
+        .read<2>(field->m_elementary_stream_priority_indicator)
+        .read<3>(field->m_pcr_flag)
+        .read<4>(field->m_opcr_flag)
+        .read<5>(field->m_splicing_point_flag)
+        .read<6>(field->m_transport_private_data_flag)
+        .read<7>(field->m_adaptation_field_extension_flag);
 
         if (field->m_pcr_flag)
         {
             uint64_t pcr_base = 0;
             uint16_t pcr_extension = 0;
             adaptation_field.read_bits<endian::u48, bitter::msb0, 33, 6, 9>()
-                .read<0>(pcr_base)
-                .read<2>(pcr_extension);
+            .read<0>(pcr_base)
+            .read<2>(pcr_extension);
             field->m_program_clock_reference = pcr_base * 300 + pcr_extension;
         }
 
@@ -55,8 +55,8 @@ public:
             uint16_t opcr_extension = 0;
 
             adaptation_field.read_bits<endian::u48, bitter::msb0, 33, 6, 9>()
-                .read<0>(opcr_base)
-                .read<2>(opcr_extension);
+            .read<0>(opcr_base)
+            .read<2>(opcr_extension);
             field->m_original_program_clock_reference =
                 opcr_base * 300 + opcr_extension;
         }
@@ -77,7 +77,7 @@ public:
         }
         if (field->m_adaptation_field_extension_flag)
         {
-            uint8_t adaptation_field_extension_length;
+            uint8_t adaptation_field_extension_length = 0;
             adaptation_field.read<endian::u8>(
                 adaptation_field_extension_length);
 
@@ -85,24 +85,24 @@ public:
                 adaptation_field_extension_length);
 
             adaptation_field_extension
-                .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 5>()
-                    .read<0>(field->m_ltw_flag)
-                    .read<1>(field->m_piecewise_rate_flag)
-                    .read<2>(field->m_seamless_splice_flag);
+            .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 5>()
+            .read<0>(field->m_ltw_flag)
+            .read<1>(field->m_piecewise_rate_flag)
+            .read<2>(field->m_seamless_splice_flag);
 
             if (field->m_ltw_flag)
             {
                 adaptation_field_extension
-                    .read_bits<endian::u16, bitter::msb0, 1, 15>()
-                        .read<0>(field->m_ltw_valid_flag)
-                        .read<1>(field->m_ltw_offset);
+                .read_bits<endian::u16, bitter::msb0, 1, 15>()
+                .read<0>(field->m_ltw_valid_flag)
+                .read<1>(field->m_ltw_offset);
             }
 
             if (field->m_piecewise_rate_flag)
             {
                 adaptation_field_extension
-                    .read_bits<endian::u24, bitter::msb0, 2, 22>()
-                        .read<1>(field->m_piecewise_rate);
+                .read_bits<endian::u24, bitter::msb0, 2, 22>()
+                .read<1>(field->m_piecewise_rate);
             }
 
             if (field->m_seamless_splice_flag)
@@ -112,11 +112,11 @@ public:
                 uint16_t dts_next_au_29_15 = 0;
                 uint16_t dts_next_au_14_0 = 0;
                 adaptation_field_extension
-                    .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                        .read<0>(field->m_splice_type)
-                        .read<1>(dts_next_au_32_30)
-                        .read<3>(dts_next_au_29_15)
-                        .read<5>(dts_next_au_14_0);
+                .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
+                .read<0>(field->m_splice_type)
+                .read<1>(dts_next_au_32_30)
+                .read<3>(dts_next_au_29_15)
+                .read<5>(dts_next_au_14_0);
                 field->m_dts_next_au = helper::read_timestamp(
                     dts_next_au_32_30,
                     dts_next_au_29_15,
@@ -272,35 +272,35 @@ public:
 
 private:
 
-    uint8_t m_length;
-    bool m_discontinuity_indicator;
-    bool m_random_access_indicator;
-    bool m_elementary_stream_priority_indicator;
-    bool m_pcr_flag;
-    bool m_opcr_flag;
-    bool m_splicing_point_flag;
-    bool m_transport_private_data_flag;
-    bool m_adaptation_field_extension_flag;
+    uint8_t m_length = 0;
+    bool m_discontinuity_indicator = false;
+    bool m_random_access_indicator = false;
+    bool m_elementary_stream_priority_indicator = false;
+    bool m_pcr_flag = false;
+    bool m_opcr_flag = false;
+    bool m_splicing_point_flag = false;
+    bool m_transport_private_data_flag = false;
+    bool m_adaptation_field_extension_flag = false;
 
-    uint64_t m_program_clock_reference;
+    uint64_t m_program_clock_reference = 0;
 
-    uint64_t m_original_program_clock_reference;
+    uint64_t m_original_program_clock_reference = 0;
 
-    uint8_t m_splice_countdown;
+    uint8_t m_splice_countdown = 0;
 
-    uint8_t m_transport_private_data_length;
-    const uint8_t* m_transport_private_data;
+    uint8_t m_transport_private_data_length = 0;
+    const uint8_t* m_transport_private_data = nullptr;
 
-    bool m_ltw_flag;
-    bool m_piecewise_rate_flag;
-    bool m_seamless_splice_flag;
+    bool m_ltw_flag = false;
+    bool m_piecewise_rate_flag = false;
+    bool m_seamless_splice_flag = false;
 
-    bool m_ltw_valid_flag;
-    uint16_t m_ltw_offset;
+    bool m_ltw_valid_flag = false;
+    uint16_t m_ltw_offset = 0;
 
-    uint32_t m_piecewise_rate;
+    uint32_t m_piecewise_rate = 0;
 
-    uint8_t m_splice_type;
-    uint64_t m_dts_next_au;
+    uint8_t m_splice_type = 0;
+    uint64_t m_dts_next_au = 0;
 };
 }

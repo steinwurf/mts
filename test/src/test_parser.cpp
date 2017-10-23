@@ -22,10 +22,11 @@ TEST(test_parser, test_ts_parsing)
     std::vector<uint8_t> packet(packet_size);
     ASSERT_EQ(0U, size % packet.size());
 
-    std::vector<uint16_t> first_pids = {
-        256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
-        257, 256, 256, 256, 256, 256, 257, 256, 256, 256, 256, 256
-    };
+    std::vector<uint16_t> first_pids =
+        {
+            256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
+            257, 256, 256, 256, 256, 256, 257, 256, 256, 256, 256, 256
+        };
 
     uint32_t pes_found = 0;
     for (uint32_t i = 0; i < size / packet.size(); ++i)

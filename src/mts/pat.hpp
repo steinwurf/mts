@@ -43,8 +43,8 @@ private:
 
     private:
 
-        uint16_t m_program_number;
-        uint16_t m_pid;
+        uint16_t m_program_number = 0;
+        uint16_t m_pid = 0;
     };
 
 public:
@@ -56,17 +56,17 @@ public:
 
         reader.read<endian::u8>(pat->m_table_id);
 
-        uint16_t section_length;
+        uint16_t section_length = 0;
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 2, 12>()
-            .read<0>(pat->m_section_syntax_indicator)
-            .read<3>(section_length);
+        .read<0>(pat->m_section_syntax_indicator)
+        .read<3>(section_length);
 
         auto section_reader = reader.skip(section_length);
 
         section_reader.read<endian::u16>(pat->m_transport_stream_id);
         section_reader.read_bits<endian::u8, bitter::msb0, 2, 5, 1>()
-            .read<1>(pat->m_version_number)
-            .read<2>(pat->m_current_next_indicator);
+        .read<1>(pat->m_version_number)
+        .read<2>(pat->m_current_next_indicator);
 
         section_reader.read<endian::u8>(pat->m_section_number);
         section_reader.read<endian::u8>(pat->m_last_section_number);
@@ -79,7 +79,7 @@ public:
             auto program_reader = section_reader.skip(4);
             program_reader.read<endian::u16>(program.m_program_number);
             program_reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
-                .read<1>(program.m_pid);
+            .read<1>(program.m_pid);
             pat->m_program_entries.push_back(program);
         }
 
@@ -141,14 +141,14 @@ public:
 
 private:
 
-    uint8_t m_table_id;
-    bool m_section_syntax_indicator;
-    uint16_t m_transport_stream_id;
-    uint8_t m_version_number;
-    bool m_current_next_indicator;
-    uint8_t m_section_number;
-    uint8_t m_last_section_number;
+    uint8_t m_table_id = 0;
+    bool m_section_syntax_indicator = false;
+    uint16_t m_transport_stream_id = 0;
+    uint8_t m_version_number = 0;
+    bool m_current_next_indicator = false;
+    uint8_t m_section_number = 0;
+    uint8_t m_last_section_number = 0;
     std::vector<program_entry> m_program_entries;
-    uint32_t m_crc;
+    uint32_t m_crc = 0;
 };
 }

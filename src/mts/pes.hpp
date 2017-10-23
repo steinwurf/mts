@@ -33,7 +33,7 @@ public:
         reader.read<endian::u24>(pes->m_packet_start_code_prefix);
         reader.read<endian::u8>(pes->m_stream_id);
 
-        uint16_t packet_length;
+        uint16_t packet_length = 0;
         reader.read<endian::u16>(packet_length);
 
         if (reader.error())
@@ -53,23 +53,23 @@ public:
             pes->m_stream_id != 0xf8) // H.222.1 type E
         {
             packet_reader
-                .read_bits<endian::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
-                    .read<0>().expect_eq(0x02)
-                    .read<1>(pes->m_scrambling_control)
-                    .read<2>(pes->m_priority)
-                    .read<3>(pes->m_data_alignment_indicator)
-                    .read<4>(pes->m_copyright)
-                    .read<5>(pes->m_original_or_copy);
+            .read_bits<endian::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
+            .read<0>().expect_eq(0x02)
+            .read<1>(pes->m_scrambling_control)
+            .read<2>(pes->m_priority)
+            .read<3>(pes->m_data_alignment_indicator)
+            .read<4>(pes->m_copyright)
+            .read<5>(pes->m_original_or_copy);
 
             packet_reader
-                .read_bits<endian::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
-                    .read<0>(pes->m_pts_dts_flags).expect_ne(0x01)
-                    .read<1>(pes->m_escr_flag)
-                    .read<2>(pes->m_es_rate_flag)
-                    .read<3>(pes->m_dsm_trick_mode_flag)
-                    .read<4>(pes->m_additional_copy_info_flag)
-                    .read<5>(pes->m_crc_flag)
-                    .read<6>(pes->m_extension_flag);
+            .read_bits<endian::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
+            .read<0>(pes->m_pts_dts_flags).expect_ne(0x01)
+            .read<1>(pes->m_escr_flag)
+            .read<2>(pes->m_es_rate_flag)
+            .read<3>(pes->m_dsm_trick_mode_flag)
+            .read<4>(pes->m_additional_copy_info_flag)
+            .read<5>(pes->m_crc_flag)
+            .read<6>(pes->m_extension_flag);
 
             uint8_t header_data_length = 0;
             packet_reader.read<endian::u8>(header_data_length);
@@ -82,10 +82,10 @@ public:
                 uint16_t ts_14_0 = 0;
 
                 header_reader
-                    .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                    .read<1>(ts_32_30)
-                    .read<3>(ts_29_15)
-                    .read<5>(ts_14_0);
+                .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
+                .read<1>(ts_32_30)
+                .read<3>(ts_29_15)
+                .read<5>(ts_14_0);
 
                 pes->m_pts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
@@ -96,10 +96,10 @@ public:
                 uint16_t ts_14_0 = 0;
 
                 header_reader
-                    .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                    .read<1>(ts_32_30)
-                    .read<3>(ts_29_15)
-                    .read<5>(ts_14_0);
+                .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
+                .read<1>(ts_32_30)
+                .read<3>(ts_29_15)
+                .read<5>(ts_14_0);
 
                 pes->m_dts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
@@ -112,11 +112,11 @@ public:
                 uint16_t escr_base = 0;
 
                 header_reader
-                    .read_bits<endian::u48, bitter::msb0, 2, 3, 1, 15, 1, 15, 1, 9, 1>()
-                    .read<1>(escr_32_30)
-                    .read<3>(escr_29_15)
-                    .read<5>(escr_14_0)
-                    .read<7>(escr_base);
+                .read_bits<endian::u48, bitter::msb0, 2, 3, 1, 15, 1, 15, 1, 9, 1>()
+                .read<1>(escr_32_30)
+                .read<3>(escr_29_15)
+                .read<5>(escr_14_0)
+                .read<7>(escr_base);
 
                 pes->m_escr = helper::read_timestamp(
                     escr_32_30, escr_29_15, escr_14_0) * 300 + escr_base;
@@ -125,23 +125,23 @@ public:
             if (pes->m_es_rate_flag)
             {
                 header_reader
-                    .read_bits<endian::u24, bitter::msb0, 1, 22, 1>()
-                    .read<1>(pes->m_es_rate);
+                .read_bits<endian::u24, bitter::msb0, 1, 22, 1>()
+                .read<1>(pes->m_es_rate);
             }
 
             if (pes->m_dsm_trick_mode_flag)
             {
                 header_reader
-                    .read_bits<endian::u8, bitter::msb0, 3, 5>()
-                    .read<0>(pes->m_trick_mode_control)
-                    .read<1>(pes->m_trick_mode_data);
+                .read_bits<endian::u8, bitter::msb0, 3, 5>()
+                .read<0>(pes->m_trick_mode_control)
+                .read<1>(pes->m_trick_mode_data);
             }
 
             if (pes->m_additional_copy_info_flag)
             {
                 header_reader
-                    .read_bits<endian::u8, bitter::msb0, 1, 7>()
-                    .read<1>(pes->m_additional_copy_info);
+                .read_bits<endian::u8, bitter::msb0, 1, 7>()
+                .read<1>(pes->m_additional_copy_info);
             }
 
             if (pes->m_crc_flag)
@@ -297,36 +297,36 @@ public:
 
 private:
 
-    uint32_t m_packet_start_code_prefix;
-    uint8_t m_stream_id;
+    uint32_t m_packet_start_code_prefix = 0;
+    uint8_t m_stream_id = 0;
 
-    uint8_t m_scrambling_control;
-    uint8_t m_priority;
-    bool m_data_alignment_indicator;
-    bool m_copyright;
-    bool m_original_or_copy;
-    uint8_t m_pts_dts_flags;
-    bool m_escr_flag;
-    bool m_es_rate_flag;
-    bool m_dsm_trick_mode_flag;
-    bool m_additional_copy_info_flag;
-    bool m_crc_flag;
-    bool m_extension_flag;
+    uint8_t m_scrambling_control = 0;
+    uint8_t m_priority = 0;
+    bool m_data_alignment_indicator = false;
+    bool m_copyright = false;
+    bool m_original_or_copy = false;
+    uint8_t m_pts_dts_flags = 0;
+    bool m_escr_flag = false;
+    bool m_es_rate_flag = false;
+    bool m_dsm_trick_mode_flag = false;
+    bool m_additional_copy_info_flag = false;
+    bool m_crc_flag = false;
+    bool m_extension_flag = false;
 
-    uint64_t m_pts;
-    uint64_t m_dts;
-    uint64_t m_escr;
+    uint64_t m_pts = 0;
+    uint64_t m_dts = 0;
+    uint64_t m_escr = 0;
 
-    uint32_t m_es_rate;
+    uint32_t m_es_rate = 0;
 
-    uint8_t m_trick_mode_control;
-    uint8_t m_trick_mode_data;
+    uint8_t m_trick_mode_control = 0;
+    uint8_t m_trick_mode_data = 0;
 
-    uint8_t m_additional_copy_info;
+    uint8_t m_additional_copy_info = 0;
 
-    uint16_t m_previous_crc;
+    uint16_t m_previous_crc = 0;
 
-    const uint8_t* m_payload_data;
-    uint32_t m_payload_size;
+    const uint8_t* m_payload_data = nullptr;
+    uint32_t m_payload_size = 0;
 };
 }
