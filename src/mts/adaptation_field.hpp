@@ -101,8 +101,8 @@ public:
             if (field->m_piecewise_rate_flag)
             {
                 adaptation_field_extension
-                    .read_bits<endian::u24, bitter::msb0, 2, 22>()
-                        .read<1>(field->m_piecewise_rate);
+                .read_bits<endian::u24, bitter::msb0, 2, 22>()
+                .read<1>(field->m_piecewise_rate);
             }
 
             if (field->m_seamless_splice_flag)

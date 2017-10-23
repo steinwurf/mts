@@ -155,68 +155,68 @@ public:
         return m_stream_entries;
     }
 
-     uint8_t table_id() const
-     {
+    uint8_t table_id() const
+    {
         return m_table_id;
-     }
+    }
 
-     bool section_syntax_indicator() const
-     {
+    bool section_syntax_indicator() const
+    {
         return m_section_syntax_indicator;
-     }
+    }
 
-     uint16_t program_number() const
-     {
+    uint16_t program_number() const
+    {
         return m_program_number;
-     }
+    }
 
-     uint8_t version_number() const
-     {
+    uint8_t version_number() const
+    {
         return m_version_number;
-     }
+    }
 
-     bool current_next_indicator() const
-     {
+    bool current_next_indicator() const
+    {
         return m_current_next_indicator;
-     }
+    }
 
-     uint8_t section_number() const
-     {
+    uint8_t section_number() const
+    {
         return m_section_number;
-     }
+    }
 
-     uint8_t last_section_number() const
-     {
+    uint8_t last_section_number() const
+    {
         return m_last_section_number;
-     }
+    }
 
-     uint16_t pcr_pid() const
-     {
+    uint16_t pcr_pid() const
+    {
         return m_pcr_pid;
-     }
+    }
 
-     uint16_t program_info_length() const
-     {
+    uint16_t program_info_length() const
+    {
         return m_program_info_length;
-     }
+    }
 
-     const uint8_t* program_info_data() const
-     {
+    const uint8_t* program_info_data() const
+    {
         return m_program_info_data;
-     }
+    }
 
 private:
 
-     uint8_t m_table_id = 0;
-     bool m_section_syntax_indicator = false;
-     uint16_t m_program_number = 0;
-     uint8_t m_version_number = 0;
-     bool m_current_next_indicator = false;
-     uint8_t m_section_number = 0;
-     uint8_t m_last_section_number = 0;
-     uint16_t m_pcr_pid = 0;
-     uint16_t m_program_info_length = 0;
-     const uint8_t* m_program_info_data = nullptr;
+    uint8_t m_table_id = 0;
+    bool m_section_syntax_indicator = false;
+    uint16_t m_program_number = 0;
+    uint8_t m_version_number = 0;
+    bool m_current_next_indicator = false;
+    uint8_t m_section_number = 0;
+    uint8_t m_last_section_number = 0;
+    uint16_t m_pcr_pid = 0;
+    uint16_t m_program_info_length = 0;
+    const uint8_t* m_program_info_data = nullptr;
 
     std::vector<std::shared_ptr<stream_entry>> m_stream_entries;
 
