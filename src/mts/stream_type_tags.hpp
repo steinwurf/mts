@@ -91,17 +91,17 @@ STREAM_TYPE_TAG(
 STREAM_TYPE_TAG(
     0x11,
     latm_transport_14496_3,
-     "ISO/IEC 14496-3 Audio with the LATM transport syntax")
+    "ISO/IEC 14496-3 Audio with the LATM transport syntax")
 
 STREAM_TYPE_TAG(
     0x12,
     stream_type12,
-    "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in PES packets")
+    "SL-packetized or FlexMux stream in PES packets")
 
 STREAM_TYPE_TAG(
     0x13,
     stream_type13,
-    "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in ISO/IEC 14496_sections")
+    "SL-packetized or FlexMux stream in ISO/IEC 14496 sections")
 
 STREAM_TYPE_TAG(
     0x14,
@@ -176,7 +176,7 @@ STREAM_TYPE_TAG(
 STREAM_TYPE_TAG(
     0x22,
     stream_type22,
-    "ISO/IEC 13818-2 video stream for service-compatible stereoscopic 3D services")
+    "Bideo stream for service-compatible stereoscopic 3D services")
 
 STREAM_TYPE_TAG(
     0x23,
