@@ -1,0 +1,20 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+bld.program(
+    features='cxx',
+    source=['mpegts_to_h264.cpp'],
+    target='mpegts_to_h264',
+    use=['mts', 'nalu_includes'])
+
+bld.program(
+    features='cxx',
+    source=['mpegts_to_aac.cpp'],
+    target='mpegts_to_aac',
+    use=['mts'])
+
+bld.program(
+    features='cxx',
+    source=['mpegts_inspect.cpp'],
+    target='mpegts_inspect',
+    use=['mts'])
