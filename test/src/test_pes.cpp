@@ -66,7 +66,7 @@ TEST(test_pes, pes_dump)
     EXPECT_EQ(1U, pes->priority());
     EXPECT_TRUE(pes->data_alignment_indicator());
     EXPECT_FALSE(pes->copyright());
-    EXPECT_EQ(0U, pes->original_or_copy());
+    EXPECT_FALSE(pes->original_or_copy());
     EXPECT_FALSE(pes->has_es_rate());
     EXPECT_FALSE(pes->has_dsm_trick_mode());
     EXPECT_FALSE(pes->has_additional_copy_info());
