@@ -33,13 +33,13 @@ def configure(properties):
     if properties.get('build_distclean'):
         command += ['distclean']
 
-    command += ['configure', '--git-protocol=git@']
+    command += ['configure', '--git_protocol=git@']
 
     if 'waf_bundle_path' in properties:
         command += ['--resolve_path=' + properties['waf_bundle_path']]
 
     if 'dependency_project' in properties:
-        command += ['--{0}-use-checkout={1}'.format(
+        command += ['--{0}_use_checkout={1}'.format(
             properties['dependency_project'],
             properties['dependency_checkout'])]
 
@@ -80,8 +80,8 @@ def install(properties):
     run_command(command)
 
 
-#def coverage_settings(options):
-#    options['required_line_coverage'] = 94.0
+def coverage_settings(options):
+    options['required_line_coverage'] = 0.0
 
 
 def main():
