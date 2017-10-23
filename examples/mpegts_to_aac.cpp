@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
             aac_file.write((char*)pes->payload_data(), pes->payload_size());
         }
     }
-    if (aac_file.tellp() == 0)
+    if ((std::size_t)aac_file.tellp() == 0)
     {
         std::cout << "No AAC data found." << std::endl;
     }

@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
             }
         }
     }
-    if (h264_file.tellp() == 0)
+    if ((std::size_t)h264_file.tellp() == 0)
     {
         std::cout << "No H.264 data found." << std::endl;
     }
