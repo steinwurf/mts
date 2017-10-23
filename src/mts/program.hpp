@@ -41,7 +41,7 @@ public:
             reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
                 .read<1>(stream_entry->m_pid);
 
-            uint16_t es_info_length;
+            uint16_t es_info_length = 0;
             reader.read_bits<endian::u16, bitter::msb0, 4, 2, 10>()
                 .read<1>().expect_eq(0x00)
                 .read<2>(es_info_length);
