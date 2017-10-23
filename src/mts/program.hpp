@@ -25,9 +25,9 @@ public:
 
         struct es_info_entry
         {
-            uint8_t m_tag;
-            const uint8_t* m_description_data;
-            uint8_t m_description_length;
+            uint8_t m_tag = 0;
+            const uint8_t* m_description_data = nullptr;
+            uint8_t m_description_length = 0;
         };
 
     public:
@@ -89,8 +89,8 @@ public:
 
     private:
 
-        uint8_t m_type;
-        uint16_t m_pid;
+        uint8_t m_type = 0;
+        uint16_t m_pid = 0;
         std::vector<es_info_entry> m_es_info_entries;
     };
 
@@ -103,7 +103,7 @@ public:
 
         reader.read<endian::u8>(program->m_table_id);
 
-        uint16_t section_length;
+        uint16_t section_length = 0;
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 2, 2, 10>()
             .read<0>(program->m_section_syntax_indicator)
             .read<3>().expect_eq(0x00)
@@ -207,19 +207,19 @@ public:
 
 private:
 
-     uint8_t m_table_id;
-     bool m_section_syntax_indicator;
-     uint16_t m_program_number;
-     uint8_t m_version_number;
-     bool m_current_next_indicator;
-     uint8_t m_section_number;
-     uint8_t m_last_section_number;
-     uint16_t m_pcr_pid;
-     uint16_t m_program_info_length;
-     const uint8_t* m_program_info_data;
+     uint8_t m_table_id = 0;
+     bool m_section_syntax_indicator = false;
+     uint16_t m_program_number = 0;
+     uint8_t m_version_number = 0;
+     bool m_current_next_indicator = false;
+     uint8_t m_section_number = 0;
+     uint8_t m_last_section_number = 0;
+     uint16_t m_pcr_pid = 0;
+     uint16_t m_program_info_length = 0;
+     const uint8_t* m_program_info_data = nullptr;
 
     std::vector<std::shared_ptr<stream_entry>> m_stream_entries;
 
-    uint32_t m_crc;
+    uint32_t m_crc = 0;
 };
 }

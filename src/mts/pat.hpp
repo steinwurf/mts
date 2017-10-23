@@ -43,8 +43,8 @@ private:
 
     private:
 
-        uint16_t m_program_number;
-        uint16_t m_pid;
+        uint16_t m_program_number = 0;
+        uint16_t m_pid = 0;
     };
 
 public:
@@ -56,7 +56,7 @@ public:
 
         reader.read<endian::u8>(pat->m_table_id);
 
-        uint16_t section_length;
+        uint16_t section_length = 0;
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 2, 12>()
             .read<0>(pat->m_section_syntax_indicator)
             .read<3>(section_length);
@@ -141,14 +141,14 @@ public:
 
 private:
 
-    uint8_t m_table_id;
-    bool m_section_syntax_indicator;
-    uint16_t m_transport_stream_id;
-    uint8_t m_version_number;
-    bool m_current_next_indicator;
-    uint8_t m_section_number;
-    uint8_t m_last_section_number;
+    uint8_t m_table_id = 0;
+    bool m_section_syntax_indicator = false;
+    uint16_t m_transport_stream_id = 0;
+    uint8_t m_version_number = 0;
+    bool m_current_next_indicator = false;
+    uint8_t m_section_number = 0;
+    uint8_t m_last_section_number = 0;
     std::vector<program_entry> m_program_entries;
-    uint32_t m_crc;
+    uint32_t m_crc = 0;
 };
 }

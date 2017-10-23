@@ -109,13 +109,13 @@ public:
 
 private:
 
-    bool m_transport_error_indicator;
-    bool m_payload_unit_start_indicator;
-    bool m_transport_priority;
-    uint16_t m_pid;
-    uint8_t m_transport_scrambling_control;
-    uint8_t m_adaptation_field_control;
-    uint8_t m_continuity_counter;
+    bool m_transport_error_indicator = false;
+    bool m_payload_unit_start_indicator = false;
+    bool m_transport_priority = false;
+    uint16_t m_pid = 0;
+    uint8_t m_transport_scrambling_control = 0;
+    uint8_t m_adaptation_field_control = 0;
+    uint8_t m_continuity_counter = 0;
 
     std::shared_ptr<mts::adaptation_field> m_adaptation_field;
 };

@@ -272,35 +272,35 @@ public:
 
 private:
 
-    uint8_t m_length;
-    bool m_discontinuity_indicator;
-    bool m_random_access_indicator;
-    bool m_elementary_stream_priority_indicator;
-    bool m_pcr_flag;
-    bool m_opcr_flag;
-    bool m_splicing_point_flag;
-    bool m_transport_private_data_flag;
-    bool m_adaptation_field_extension_flag;
+    uint8_t m_length = 0;
+    bool m_discontinuity_indicator = false;
+    bool m_random_access_indicator = false;
+    bool m_elementary_stream_priority_indicator = false;
+    bool m_pcr_flag = false;
+    bool m_opcr_flag = false;
+    bool m_splicing_point_flag = false;
+    bool m_transport_private_data_flag = false;
+    bool m_adaptation_field_extension_flag = false;
 
-    uint64_t m_program_clock_reference;
+    uint64_t m_program_clock_reference = 0;
 
-    uint64_t m_original_program_clock_reference;
+    uint64_t m_original_program_clock_reference = 0;
 
-    uint8_t m_splice_countdown;
+    uint8_t m_splice_countdown = 0;
 
-    uint8_t m_transport_private_data_length;
-    const uint8_t* m_transport_private_data;
+    uint8_t m_transport_private_data_length = 0;
+    const uint8_t* m_transport_private_data = nullptr;
 
-    bool m_ltw_flag;
-    bool m_piecewise_rate_flag;
-    bool m_seamless_splice_flag;
+    bool m_ltw_flag = false;
+    bool m_piecewise_rate_flag = false;
+    bool m_seamless_splice_flag = false;
 
-    bool m_ltw_valid_flag;
-    uint16_t m_ltw_offset;
+    bool m_ltw_valid_flag = false;
+    uint16_t m_ltw_offset = 0;
 
-    uint32_t m_piecewise_rate;
+    uint32_t m_piecewise_rate = 0;
 
-    uint8_t m_splice_type;
-    uint64_t m_dts_next_au;
+    uint8_t m_splice_type = 0;
+    uint64_t m_dts_next_au = 0;
 };
 }

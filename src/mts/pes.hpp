@@ -33,7 +33,7 @@ public:
         reader.read<endian::u24>(pes->m_packet_start_code_prefix);
         reader.read<endian::u8>(pes->m_stream_id);
 
-        uint16_t packet_length;
+        uint16_t packet_length = 0;
         reader.read<endian::u16>(packet_length);
 
         if (reader.error())
@@ -297,36 +297,36 @@ public:
 
 private:
 
-    uint32_t m_packet_start_code_prefix;
-    uint8_t m_stream_id;
+    uint32_t m_packet_start_code_prefix = 0;
+    uint8_t m_stream_id = 0;
 
-    uint8_t m_scrambling_control;
-    uint8_t m_priority;
-    bool m_data_alignment_indicator;
-    bool m_copyright;
-    bool m_original_or_copy;
-    uint8_t m_pts_dts_flags;
-    bool m_escr_flag;
-    bool m_es_rate_flag;
-    bool m_dsm_trick_mode_flag;
-    bool m_additional_copy_info_flag;
-    bool m_crc_flag;
-    bool m_extension_flag;
+    uint8_t m_scrambling_control = 0;
+    uint8_t m_priority = 0;
+    bool m_data_alignment_indicator = false;
+    bool m_copyright = false;
+    bool m_original_or_copy = false;
+    uint8_t m_pts_dts_flags = 0;
+    bool m_escr_flag = false;
+    bool m_es_rate_flag = false;
+    bool m_dsm_trick_mode_flag = false;
+    bool m_additional_copy_info_flag = false;
+    bool m_crc_flag = false;
+    bool m_extension_flag = false;
 
-    uint64_t m_pts;
-    uint64_t m_dts;
-    uint64_t m_escr;
+    uint64_t m_pts = 0;
+    uint64_t m_dts = 0;
+    uint64_t m_escr = 0;
 
-    uint32_t m_es_rate;
+    uint32_t m_es_rate = 0;
 
-    uint8_t m_trick_mode_control;
-    uint8_t m_trick_mode_data;
+    uint8_t m_trick_mode_control = 0;
+    uint8_t m_trick_mode_data = 0;
 
-    uint8_t m_additional_copy_info;
+    uint8_t m_additional_copy_info = 0;
 
-    uint16_t m_previous_crc;
+    uint16_t m_previous_crc = 0;
 
-    const uint8_t* m_payload_data;
-    uint32_t m_payload_size;
+    const uint8_t* m_payload_data = nullptr;
+    uint32_t m_payload_size = 0;
 };
 }

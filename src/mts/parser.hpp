@@ -112,13 +112,11 @@ public:
 
         if (pid == 0)
         {
-            auto optional_pat = mts::pat::parse(reader);
+            auto pat = mts::pat::parse(reader);
             if (error)
                 return;
 
-            auto pat = *optional_pat;
-
-            for (const auto& program_entry : pat.program_entries())
+            for (const auto& program_entry : pat->program_entries())
             {
                 if (program_entry.is_network_pid())
                 {
@@ -218,12 +216,12 @@ private:
 
 private:
 
+    const uint32_t m_packet_size;
+
     std::map<uint16_t, std::shared_ptr<program>> m_programs;
     std::map<uint16_t, stream_state> m_stream_states;
 
     std::vector<uint8_t> m_pes_data;
-    uint16_t m_pes_pid;
-
-    const uint32_t m_packet_size;
+    uint16_t m_pes_pid = 0;
 };
 }
