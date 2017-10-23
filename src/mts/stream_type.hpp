@@ -12,7 +12,7 @@ namespace mts
 /// problem with it - take it up with him :)
 ///
 /// http://phk.freebsd.dk/time/20141116.html
-enum class stream_type : uint8_t
+enum class stream_type
 {
 #define STREAM_TYPE_TAG(value,id,msg) id=value,
 #include "stream_type_tags.hpp"

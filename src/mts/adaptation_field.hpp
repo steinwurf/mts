@@ -77,7 +77,7 @@ public:
         }
         if (field->m_adaptation_field_extension_flag)
         {
-            uint8_t adaptation_field_extension_length;
+            uint8_t adaptation_field_extension_length = 0;
             adaptation_field.read<endian::u8>(
                 adaptation_field_extension_length);
 
