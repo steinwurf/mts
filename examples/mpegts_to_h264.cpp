@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
                         h264_file.write((char*)nalu.m_data, nalu.m_size);
                     }
                 }
-                else if(!found_pps)
+                else if (!found_pps)
                 {
                     if (nalu.m_type == nalu::type::picture_parameter_set)
                     {

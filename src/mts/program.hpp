@@ -39,12 +39,12 @@ public:
             reader.read<endian::u8>(stream_entry->m_type);
 
             reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
-                .read<1>(stream_entry->m_pid);
+            .read<1>(stream_entry->m_pid);
 
             uint16_t es_info_length = 0;
             reader.read_bits<endian::u16, bitter::msb0, 4, 2, 10>()
-                .read<1>().expect_eq(0x00)
-                .read<2>(es_info_length);
+            .read<1>().expect_eq(0x00)
+            .read<2>(es_info_length);
 
             auto es_info_reader = reader.skip(es_info_length);
 
@@ -105,27 +105,27 @@ public:
 
         uint16_t section_length = 0;
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 2, 2, 10>()
-            .read<0>(program->m_section_syntax_indicator)
-            .read<3>().expect_eq(0x00)
-            .read<4>(section_length);
+        .read<0>(program->m_section_syntax_indicator)
+        .read<3>().expect_eq(0x00)
+        .read<4>(section_length);
 
         auto section_reader = reader.skip(section_length);
 
         section_reader.read<endian::u16>(program->m_program_number);
 
         section_reader.read_bits<endian::u8, bitter::msb0, 2, 5, 1>()
-            .read<1>(program->m_version_number)
-            .read<2>(program->m_current_next_indicator);
+        .read<1>(program->m_version_number)
+        .read<2>(program->m_current_next_indicator);
 
         section_reader.read<endian::u8>(program->m_section_number);
         section_reader.read<endian::u8>(program->m_last_section_number);
 
         section_reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
-            .read<1>(program->m_pcr_pid);
+        .read<1>(program->m_pcr_pid);
 
         section_reader.read_bits<endian::u16, bitter::msb0, 4, 2, 10>()
-            .read<1>().expect_eq(0x00)
-            .read<2>(program->m_program_info_length);
+        .read<1>().expect_eq(0x00)
+        .read<2>(program->m_program_info_length);
 
         auto program_info = section_reader.skip(program->m_program_info_length);
         program->m_program_info_data = program_info.data();
