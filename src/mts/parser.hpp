@@ -177,11 +177,11 @@ public:
         return find_stream(pid) != nullptr;
     }
 
-    enum stream_type stream_type(uint16_t pid) const
+    mts::stream_type stream_type(uint16_t pid) const
     {
         auto stream_entry = find_stream(pid);
         assert(stream_entry != nullptr);
-        return static_cast<enum stream_type>(stream_entry->type());
+        return static_cast<mts::stream_type>(stream_entry->type());
     }
 
     uint32_t packet_size() const
