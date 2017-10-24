@@ -6,7 +6,7 @@ every change, see the Git log.
 
 Latest
 ------
-* Major: Upgrade bnb to version 2.
+* Major: Upgrade bnb to version 3.
 
 1.0.0
 -----
