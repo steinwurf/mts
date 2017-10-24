@@ -39,7 +39,7 @@ def configure(properties):
         command += ['--resolve_path=' + properties['waf_bundle_path']]
 
     if 'dependency_project' in properties:
-        command += ['--{0}_use_checkout={1}'.format(
+        command += ['--{0}_checkout={1}'.format(
             properties['dependency_project'],
             properties['dependency_checkout'])]
 
