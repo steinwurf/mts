@@ -10,15 +10,8 @@
         "name": "bnb",
         "resolver": "git",
         "method": "semver",
-        "major": 1,
+        "major": 2,
         "sources": ["github.com/steinwurf/bnb.git"]
-    },
-    {
-        "name": "bitter",
-        "resolver": "git",
-        "method": "semver",
-        "major": 3,
-        "sources": ["github.com/steinwurf/bitter.git"]
     },
     {
         "name": "nalu",

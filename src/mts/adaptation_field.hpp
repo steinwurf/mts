@@ -30,22 +30,22 @@ public:
 
         adaptation_field
         .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 1, 1, 1, 1, 1>()
-        .read<0>(field->m_discontinuity_indicator)
-        .read<1>(field->m_random_access_indicator)
-        .read<2>(field->m_elementary_stream_priority_indicator)
-        .read<3>(field->m_pcr_flag)
-        .read<4>(field->m_opcr_flag)
-        .read<5>(field->m_splicing_point_flag)
-        .read<6>(field->m_transport_private_data_flag)
-        .read<7>(field->m_adaptation_field_extension_flag);
+        .get<0>(field->m_discontinuity_indicator)
+        .get<1>(field->m_random_access_indicator)
+        .get<2>(field->m_elementary_stream_priority_indicator)
+        .get<3>(field->m_pcr_flag)
+        .get<4>(field->m_opcr_flag)
+        .get<5>(field->m_splicing_point_flag)
+        .get<6>(field->m_transport_private_data_flag)
+        .get<7>(field->m_adaptation_field_extension_flag);
 
         if (field->m_pcr_flag)
         {
             uint64_t pcr_base = 0;
             uint16_t pcr_extension = 0;
             adaptation_field.read_bits<endian::u48, bitter::msb0, 33, 6, 9>()
-            .read<0>(pcr_base)
-            .read<2>(pcr_extension);
+            .get<0>(pcr_base)
+            .get<2>(pcr_extension);
             field->m_program_clock_reference = pcr_base * 300 + pcr_extension;
         }
 
@@ -55,8 +55,8 @@ public:
             uint16_t opcr_extension = 0;
 
             adaptation_field.read_bits<endian::u48, bitter::msb0, 33, 6, 9>()
-            .read<0>(opcr_base)
-            .read<2>(opcr_extension);
+            .get<0>(opcr_base)
+            .get<2>(opcr_extension);
             field->m_original_program_clock_reference =
                 opcr_base * 300 + opcr_extension;
         }
@@ -86,23 +86,23 @@ public:
 
             adaptation_field_extension
             .read_bits<endian::u8, bitter::msb0, 1, 1, 1, 5>()
-            .read<0>(field->m_ltw_flag)
-            .read<1>(field->m_piecewise_rate_flag)
-            .read<2>(field->m_seamless_splice_flag);
+            .get<0>(field->m_ltw_flag)
+            .get<1>(field->m_piecewise_rate_flag)
+            .get<2>(field->m_seamless_splice_flag);
 
             if (field->m_ltw_flag)
             {
                 adaptation_field_extension
                 .read_bits<endian::u16, bitter::msb0, 1, 15>()
-                .read<0>(field->m_ltw_valid_flag)
-                .read<1>(field->m_ltw_offset);
+                .get<0>(field->m_ltw_valid_flag)
+                .get<1>(field->m_ltw_offset);
             }
 
             if (field->m_piecewise_rate_flag)
             {
                 adaptation_field_extension
                 .read_bits<endian::u24, bitter::msb0, 2, 22>()
-                .read<1>(field->m_piecewise_rate);
+                .get<1>(field->m_piecewise_rate);
             }
 
             if (field->m_seamless_splice_flag)
@@ -113,10 +113,10 @@ public:
                 uint16_t dts_next_au_14_0 = 0;
                 adaptation_field_extension
                 .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                .read<0>(field->m_splice_type)
-                .read<1>(dts_next_au_32_30)
-                .read<3>(dts_next_au_29_15)
-                .read<5>(dts_next_au_14_0);
+                .get<0>(field->m_splice_type)
+                .get<1>(dts_next_au_32_30)
+                .get<3>(dts_next_au_29_15)
+                .get<5>(dts_next_au_14_0);
                 field->m_dts_next_au = helper::read_timestamp(
                     dts_next_au_32_30,
                     dts_next_au_29_15,

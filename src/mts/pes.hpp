@@ -54,22 +54,22 @@ public:
         {
             packet_reader
             .read_bits<endian::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
-            .read<0>().expect_eq(0x02)
-            .read<1>(pes->m_scrambling_control)
-            .read<2>(pes->m_priority)
-            .read<3>(pes->m_data_alignment_indicator)
-            .read<4>(pes->m_copyright)
-            .read<5>(pes->m_original_or_copy);
+            .get<0>().expect_eq(0x02)
+            .get<1>(pes->m_scrambling_control)
+            .get<2>(pes->m_priority)
+            .get<3>(pes->m_data_alignment_indicator)
+            .get<4>(pes->m_copyright)
+            .get<5>(pes->m_original_or_copy);
 
             packet_reader
             .read_bits<endian::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
-            .read<0>(pes->m_pts_dts_flags).expect_ne(0x01)
-            .read<1>(pes->m_escr_flag)
-            .read<2>(pes->m_es_rate_flag)
-            .read<3>(pes->m_dsm_trick_mode_flag)
-            .read<4>(pes->m_additional_copy_info_flag)
-            .read<5>(pes->m_crc_flag)
-            .read<6>(pes->m_extension_flag);
+            .get<0>(pes->m_pts_dts_flags).expect_ne(0x01)
+            .get<1>(pes->m_escr_flag)
+            .get<2>(pes->m_es_rate_flag)
+            .get<3>(pes->m_dsm_trick_mode_flag)
+            .get<4>(pes->m_additional_copy_info_flag)
+            .get<5>(pes->m_crc_flag)
+            .get<6>(pes->m_extension_flag);
 
             uint8_t header_data_length = 0;
             packet_reader.read<endian::u8>(header_data_length);
@@ -83,9 +83,9 @@ public:
 
                 header_reader
                 .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                .read<1>(ts_32_30)
-                .read<3>(ts_29_15)
-                .read<5>(ts_14_0);
+                .get<1>(ts_32_30)
+                .get<3>(ts_29_15)
+                .get<5>(ts_14_0);
 
                 pes->m_pts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
@@ -97,9 +97,9 @@ public:
 
                 header_reader
                 .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                .read<1>(ts_32_30)
-                .read<3>(ts_29_15)
-                .read<5>(ts_14_0);
+                .get<1>(ts_32_30)
+                .get<3>(ts_29_15)
+                .get<5>(ts_14_0);
 
                 pes->m_dts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
@@ -113,10 +113,10 @@ public:
 
                 header_reader
                 .read_bits<endian::u48, bitter::msb0, 2, 3, 1, 15, 1, 15, 1, 9, 1>()
-                .read<1>(escr_32_30)
-                .read<3>(escr_29_15)
-                .read<5>(escr_14_0)
-                .read<7>(escr_base);
+                .get<1>(escr_32_30)
+                .get<3>(escr_29_15)
+                .get<5>(escr_14_0)
+                .get<7>(escr_base);
 
                 pes->m_escr = helper::read_timestamp(
                     escr_32_30, escr_29_15, escr_14_0) * 300 + escr_base;
@@ -126,22 +126,22 @@ public:
             {
                 header_reader
                 .read_bits<endian::u24, bitter::msb0, 1, 22, 1>()
-                .read<1>(pes->m_es_rate);
+                .get<1>(pes->m_es_rate);
             }
 
             if (pes->m_dsm_trick_mode_flag)
             {
                 header_reader
                 .read_bits<endian::u8, bitter::msb0, 3, 5>()
-                .read<0>(pes->m_trick_mode_control)
-                .read<1>(pes->m_trick_mode_data);
+                .get<0>(pes->m_trick_mode_control)
+                .get<1>(pes->m_trick_mode_data);
             }
 
             if (pes->m_additional_copy_info_flag)
             {
                 header_reader
                 .read_bits<endian::u8, bitter::msb0, 1, 7>()
-                .read<1>(pes->m_additional_copy_info);
+                .get<1>(pes->m_additional_copy_info);
             }
 
             if (pes->m_crc_flag)

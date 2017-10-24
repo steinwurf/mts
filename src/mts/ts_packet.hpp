@@ -28,14 +28,14 @@ public:
         reader.read<endian::u8>().expect_eq(0x47); // sýnc byte
 
         reader.read_bits<endian::u16, bitter::msb0, 1, 1, 1, 13>()
-        .read<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
-        .read<1>(ts_packet->m_payload_unit_start_indicator)
-        .read<2>(ts_packet->m_transport_priority)
-        .read<3>(ts_packet->m_pid);
+        .get<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
+        .get<1>(ts_packet->m_payload_unit_start_indicator)
+        .get<2>(ts_packet->m_transport_priority)
+        .get<3>(ts_packet->m_pid);
         reader.read_bits<endian::u8, bitter::msb0, 2, 2, 4>()
-        .read<0>(ts_packet->m_transport_scrambling_control)
-        .read<1>(ts_packet->m_adaptation_field_control)
-        .read<2>(ts_packet->m_continuity_counter);
+        .get<0>(ts_packet->m_transport_scrambling_control)
+        .get<1>(ts_packet->m_adaptation_field_control)
+        .get<2>(ts_packet->m_continuity_counter);
 
         if (reader.error())
         {
