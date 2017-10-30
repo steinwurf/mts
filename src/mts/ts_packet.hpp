@@ -25,14 +25,14 @@ public:
     {
         auto ts_packet = std::make_shared<mts::ts_packet>();
 
-        reader.read<endian::u8>().expect_eq(0x47); // sýnc byte
+        reader.read_bytes<1>().expect_eq(0x47); // sýnc byte
 
-        reader.read_bits<endian::u16, bitter::msb0, 1, 1, 1, 13>()
+        reader.read_bits<bitter::u16, bitter::msb0, 1, 1, 1, 13>()
         .get<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
         .get<1>(ts_packet->m_payload_unit_start_indicator)
         .get<2>(ts_packet->m_transport_priority)
         .get<3>(ts_packet->m_pid);
-        reader.read_bits<endian::u8, bitter::msb0, 2, 2, 4>()
+        reader.read_bits<bitter::u8, bitter::msb0, 2, 2, 4>()
         .get<0>(ts_packet->m_transport_scrambling_control)
         .get<1>(ts_packet->m_adaptation_field_control)
         .get<2>(ts_packet->m_continuity_counter);

@@ -103,7 +103,7 @@ public:
         if (ts_packet->payload_unit_start_indicator())
         {
             uint8_t pointer_field = 0;
-            reader.read<endian::u8>(pointer_field);
+            reader.read_bytes<1>(pointer_field);
             if (pointer_field != 0)
             {
                 reader.skip(pointer_field);

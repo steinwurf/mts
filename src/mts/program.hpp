@@ -36,13 +36,13 @@ public:
             bnb::stream_reader<endian::big_endian>& reader)
         {
             auto stream_entry = std::make_shared<mts::program::stream_entry>();
-            reader.read<endian::u8>(stream_entry->m_type);
+            reader.read_bytes<1>(stream_entry->m_type);
 
-            reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
+            reader.read_bits<bitter::u16, bitter::msb0, 3, 13>()
             .get<1>(stream_entry->m_pid);
 
             uint16_t es_info_length = 0;
-            reader.read_bits<endian::u16, bitter::msb0, 4, 2, 10>()
+            reader.read_bits<bitter::u16, bitter::msb0, 4, 2, 10>()
             .get<1>().expect_eq(0x00)
             .get<2>(es_info_length);
 
@@ -53,8 +53,8 @@ public:
                 es_info_reader.remaining_size() > 0)
             {
                 mts::program::stream_entry::es_info_entry es_info_entry;
-                es_info_reader.read<endian::u8>(es_info_entry.m_tag);
-                es_info_reader.read<endian::u8>(
+                es_info_reader.read_bytes<1>(es_info_entry.m_tag);
+                es_info_reader.read_bytes<1>(
                     es_info_entry.m_description_length);
 
                 auto description = es_info_reader.skip(
@@ -101,29 +101,29 @@ public:
     {
         auto program = std::make_shared<mts::program>();
 
-        reader.read<endian::u8>(program->m_table_id);
+        reader.read_bytes<1>(program->m_table_id);
 
         uint16_t section_length = 0;
-        reader.read_bits<endian::u16, bitter::msb0, 1, 1, 2, 2, 10>()
+        reader.read_bits<bitter::u16, bitter::msb0, 1, 1, 2, 2, 10>()
         .get<0>(program->m_section_syntax_indicator)
         .get<3>().expect_eq(0x00)
         .get<4>(section_length);
 
         auto section_reader = reader.skip(section_length);
 
-        section_reader.read<endian::u16>(program->m_program_number);
+        section_reader.read_bytes<2>(program->m_program_number);
 
-        section_reader.read_bits<endian::u8, bitter::msb0, 2, 5, 1>()
+        section_reader.read_bits<bitter::u8, bitter::msb0, 2, 5, 1>()
         .get<1>(program->m_version_number)
         .get<2>(program->m_current_next_indicator);
 
-        section_reader.read<endian::u8>(program->m_section_number);
-        section_reader.read<endian::u8>(program->m_last_section_number);
+        section_reader.read_bytes<1>(program->m_section_number);
+        section_reader.read_bytes<1>(program->m_last_section_number);
 
-        section_reader.read_bits<endian::u16, bitter::msb0, 3, 13>()
+        section_reader.read_bits<bitter::u16, bitter::msb0, 3, 13>()
         .get<1>(program->m_pcr_pid);
 
-        section_reader.read_bits<endian::u16, bitter::msb0, 4, 2, 10>()
+        section_reader.read_bits<bitter::u16, bitter::msb0, 4, 2, 10>()
         .get<1>().expect_eq(0x00)
         .get<2>(program->m_program_info_length);
 
@@ -141,7 +141,7 @@ public:
             program->m_stream_entries.push_back(stream);
         }
 
-        section_reader.read<endian::u32>(program->m_crc);
+        section_reader.read_bytes<4>(program->m_crc);
 
         if (reader.error())
             return nullptr;

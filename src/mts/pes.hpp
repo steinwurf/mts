@@ -30,11 +30,11 @@ public:
         bnb::stream_reader<endian::big_endian> reader(data, size, error);
         auto pes = std::make_shared<mts::pes>();
 
-        reader.read<endian::u24>(pes->m_packet_start_code_prefix);
-        reader.read<endian::u8>(pes->m_stream_id);
+        reader.read_bytes<3>(pes->m_packet_start_code_prefix);
+        reader.read_bytes<1>(pes->m_stream_id);
 
         uint16_t packet_length = 0;
-        reader.read<endian::u16>(packet_length);
+        reader.read_bytes<2>(packet_length);
 
         if (reader.error())
             return nullptr;
@@ -53,7 +53,7 @@ public:
             pes->m_stream_id != 0xf8) // H.222.1 type E
         {
             packet_reader
-            .read_bits<endian::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
+            .read_bits<bitter::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
             .get<0>().expect_eq(0x02)
             .get<1>(pes->m_scrambling_control)
             .get<2>(pes->m_priority)
@@ -62,7 +62,7 @@ public:
             .get<5>(pes->m_original_or_copy);
 
             packet_reader
-            .read_bits<endian::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
+            .read_bits<bitter::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
             .get<0>(pes->m_pts_dts_flags).expect_ne(0x01)
             .get<1>(pes->m_escr_flag)
             .get<2>(pes->m_es_rate_flag)
@@ -72,7 +72,7 @@ public:
             .get<6>(pes->m_extension_flag);
 
             uint8_t header_data_length = 0;
-            packet_reader.read<endian::u8>(header_data_length);
+            packet_reader.read_bytes<1>(header_data_length);
             auto header_reader = packet_reader.skip(header_data_length);
 
             if (pes->has_presentation_timestamp())
@@ -82,7 +82,7 @@ public:
                 uint16_t ts_14_0 = 0;
 
                 header_reader
-                .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
+                .read_bits<bitter::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
                 .get<1>(ts_32_30)
                 .get<3>(ts_29_15)
                 .get<5>(ts_14_0);
@@ -96,7 +96,7 @@ public:
                 uint16_t ts_14_0 = 0;
 
                 header_reader
-                .read_bits<endian::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
+                .read_bits<bitter::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
                 .get<1>(ts_32_30)
                 .get<3>(ts_29_15)
                 .get<5>(ts_14_0);
@@ -112,7 +112,7 @@ public:
                 uint16_t escr_base = 0;
 
                 header_reader
-                .read_bits<endian::u48, bitter::msb0, 2, 3, 1, 15, 1, 15, 1, 9, 1>()
+                .read_bits<bitter::u48, bitter::msb0, 2, 3, 1, 15, 1, 15, 1, 9, 1>()
                 .get<1>(escr_32_30)
                 .get<3>(escr_29_15)
                 .get<5>(escr_14_0)
@@ -125,14 +125,14 @@ public:
             if (pes->m_es_rate_flag)
             {
                 header_reader
-                .read_bits<endian::u24, bitter::msb0, 1, 22, 1>()
+                .read_bits<bitter::u24, bitter::msb0, 1, 22, 1>()
                 .get<1>(pes->m_es_rate);
             }
 
             if (pes->m_dsm_trick_mode_flag)
             {
                 header_reader
-                .read_bits<endian::u8, bitter::msb0, 3, 5>()
+                .read_bits<bitter::u8, bitter::msb0, 3, 5>()
                 .get<0>(pes->m_trick_mode_control)
                 .get<1>(pes->m_trick_mode_data);
             }
@@ -140,13 +140,13 @@ public:
             if (pes->m_additional_copy_info_flag)
             {
                 header_reader
-                .read_bits<endian::u8, bitter::msb0, 1, 7>()
+                .read_bits<bitter::u8, bitter::msb0, 1, 7>()
                 .get<1>(pes->m_additional_copy_info);
             }
 
             if (pes->m_crc_flag)
             {
-                header_reader.read<endian::u16>(pes->m_previous_crc);
+                header_reader.read_bytes<2>(pes->m_previous_crc);
             }
         }
 
