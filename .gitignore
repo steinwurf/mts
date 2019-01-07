@@ -24,6 +24,7 @@ waf3-*
 .waf3-*
 .lock-*
 build
+build_current
 resolve_symlinks
 resolved_dependencies
 
@@ -55,6 +56,7 @@ local.properties
 *.sdf
 *.opensdf
 *.log
+*.vscode
 *.vcxproj*
 VSProjects
 
