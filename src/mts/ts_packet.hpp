@@ -24,8 +24,8 @@ public:
         bnb::stream_reader<endian::big_endian>& reader)
     {
         auto ts_packet = std::make_shared<mts::ts_packet>();
-
-        reader.read_bytes<1>().expect_eq(0x47); // sýnc byte
+        uint8_t dummy = 0; // dummy variable to prevent endian from complaining.
+        reader.read_bytes<1>(dummy).expect_eq(0x47); // sýnc byte
 
         reader.read_bits<bitter::u16, bitter::msb0, 1, 1, 1, 13>()
         .get<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
