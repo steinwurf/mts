@@ -6,7 +6,9 @@ every change, see the Git log.
 
 Latest
 ------
-* tbd
+* Minor: All parsable objects now have two versions of parse:
+  ``parse(stream_reader)``, and
+  ``parse(data, size, error)``.
 
 4.0.0
 -----

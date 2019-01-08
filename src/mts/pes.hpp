@@ -25,9 +25,16 @@ class pes
 public:
 
     static std::shared_ptr<pes> parse(
-        const uint8_t* data, uint32_t size, std::error_code& error)
+        const uint8_t* data, uint64_t size, std::error_code& error)
     {
-        bnb::stream_reader<endian::big_endian> reader(data, size, error);
+        bnb::stream_reader<endian::big_endian> reader(
+            data, size, error);
+        return parse(reader);
+    }
+
+    static std::shared_ptr<pes> parse(
+        bnb::stream_reader<endian::big_endian>& reader)
+    {
         auto pes = std::make_shared<mts::pes>();
 
         reader.read_bytes<3>(pes->m_packet_start_code_prefix);

@@ -19,6 +19,14 @@ class adaptation_field
 public:
 
     static std::shared_ptr<adaptation_field> parse(
+        const uint8_t* data, uint64_t size, std::error_code& error)
+    {
+        bnb::stream_reader<endian::big_endian> reader(
+            data, size, error);
+        return parse(reader);
+    }
+
+    static std::shared_ptr<adaptation_field> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
         auto field = std::make_shared<mts::adaptation_field>();

@@ -21,6 +21,14 @@ class ts_packet
 public:
 
     static std::shared_ptr<ts_packet> parse(
+        const uint8_t* data, uint64_t size, std::error_code& error)
+    {
+        bnb::stream_reader<endian::big_endian> reader(
+            data, size, error);
+        return parse(reader);
+    }
+
+    static std::shared_ptr<ts_packet> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
         auto ts_packet = std::make_shared<mts::ts_packet>();

@@ -33,6 +33,14 @@ public:
     public:
 
         static std::shared_ptr<stream_entry> parse(
+            const uint8_t* data, uint64_t size, std::error_code& error)
+        {
+            bnb::stream_reader<endian::big_endian> reader(
+                data, size, error);
+            return parse(reader);
+        }
+
+        static std::shared_ptr<stream_entry> parse(
             bnb::stream_reader<endian::big_endian>& reader)
         {
             auto stream_entry = std::make_shared<mts::program::stream_entry>();
@@ -95,6 +103,14 @@ public:
     };
 
 public:
+
+    static std::shared_ptr<program> parse(
+        const uint8_t* data, uint64_t size, std::error_code& error)
+    {
+        bnb::stream_reader<endian::big_endian> reader(
+            data, size, error);
+        return parse(reader);
+    }
 
     static std::shared_ptr<program> parse(
         bnb::stream_reader<endian::big_endian>& reader)

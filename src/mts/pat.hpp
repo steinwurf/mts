@@ -50,6 +50,14 @@ private:
 public:
 
     static std::shared_ptr<pat> parse(
+        const uint8_t* data, uint64_t size, std::error_code& error)
+    {
+        bnb::stream_reader<endian::big_endian> reader(
+            data, size, error);
+        return parse(reader);
+    }
+
+    static std::shared_ptr<pat> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
         auto pat = std::make_shared<mts::pat>();

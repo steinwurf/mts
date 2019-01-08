@@ -38,6 +38,7 @@ public:
     {
         if (has_pes())
         {
+            // Assume previous pes has been read and start the next one.
             m_pes_pid = 0;
             m_pes_data.resize(0);
         }
