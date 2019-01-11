@@ -154,7 +154,10 @@ void handle_data(const uint8_t* data, uint32_t size)
 void parse_ts_packet(const uint8_t* data, std::error_code& error)
 {
     m_parser.read(data, error);
-    if (error) return;
+    if (error)
+    {
+        return;
+    }
 
     if (m_parser.has_pes())
     {
@@ -165,12 +168,18 @@ void parse_ts_packet(const uint8_t* data, std::error_code& error)
             m_stream_types.push_back(type);
             std::cout << "Found (" << pid << ") " << mts::stream_type_to_string(type) << std::endl;
         }
-        if (type != mts::stream_type::avc_video_stream) return;
+        if (type != mts::stream_type::avc_video_stream)
+        {
+            return;
+        }
 
         auto& pes_data = m_parser.pes_data();
-        std::error_code error;
         auto pes = mts::pes::parse(pes_data.data(), pes_data.size(), error);
-        if (error) return;
+        if (error)
+        {
+            std::cout << "Invalid PES" << std::endl;
+            return;
+        }
         if (m_callback) m_callback(pes->payload_data(), pes->payload_size());
     }
 }
@@ -231,6 +240,7 @@ int main(int argc, char* argv[])
     {
         if (found_sps && found_pps)
         {
+            std::cout << ".";
             h264_file.write((char*)data, size);
             return;
         }
