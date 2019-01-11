@@ -40,16 +40,25 @@ public:
         reader.read_bytes<3>(pes->m_packet_start_code_prefix);
         reader.read_bytes<1>(pes->m_stream_id);
 
-        uint16_t packet_length = 0;
-        reader.read_bytes<2>(packet_length);
+        uint16_t read_packet_length = 0;
+        reader.read_bytes<2>(read_packet_length);
 
         if (reader.error())
             return nullptr;
 
-        if (packet_length == 0)
-            packet_length = reader.remaining_size();
+        uint32_t bytes_to_skip = read_packet_length;
+        // A value of 0 indicates that the PES packet length is neither
+        // specified nor bounded and is allowed only in PES packets whose
+        // payload consists of bytes from a video elementary stream contained
+        // in transport stream packets.
+        //
+        // From ISO/IEC 13818-1:2013 p. 35
+        if (bytes_to_skip == 0)
+        {
+            bytes_to_skip = reader.remaining_size();
+        }
 
-        auto packet_reader = reader.skip(packet_length);
+        auto packet_reader = reader.skip(bytes_to_skip);
         if (pes->m_stream_id != 0xbc && // program_stream_map
             pes->m_stream_id != 0xbe && // padding_stream
             pes->m_stream_id != 0xbf && // private_stream_2

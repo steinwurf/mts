@@ -9,6 +9,12 @@ bld.program(
 
 bld.program(
     features='cxx',
+    source=['mpegts_stream_to_h264.cpp'],
+    target='mpegts_stream_to_h264',
+    use=['mts', 'nalu_includes', 'boost_system', 'PTHREAD'])
+
+bld.program(
+    features='cxx',
     source=['mpegts_to_aac.cpp'],
     target='mpegts_to_aac',
     use=['mts'])

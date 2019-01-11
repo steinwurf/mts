@@ -38,8 +38,6 @@ int main(int argc, char* argv[])
     mts::parser parser(packet_size);
     std::vector<uint8_t> packet(packet_size);
 
-    bool found_sps = false;
-    bool found_pps = false;
     for (uint32_t i = 0; i < size / packet.size(); ++i)
     {
         file.read((char*)packet.data(), packet.size());
@@ -58,42 +56,7 @@ int main(int argc, char* argv[])
             if (error)
                 continue;
 
-            if (found_sps && found_pps)
-            {
-                h264_file.write((char*)pes->payload_data(), pes->payload_size());
-                continue;
-            }
-
-            auto nalus = nalu::to_annex_b_nalus(
-                pes->payload_data(), pes->payload_size(), error);
-
-            if (error)
-                continue;
-
-            for (auto& nalu : nalus)
-            {
-                if (!found_sps)
-                {
-                    if (nalu.m_type == nalu::type::sequence_parameter_set)
-                    {
-                        found_sps = true;
-                        h264_file.write((char*)nalu.m_data, nalu.m_size);
-                    }
-                }
-                else if (!found_pps)
-                {
-                    if (nalu.m_type == nalu::type::picture_parameter_set)
-                    {
-                        found_pps = true;
-                        h264_file.write((char*)nalu.m_data, nalu.m_size);
-                        // found both sps and pps - reset
-                        parser.reset();
-                        file.seekg(0, std::ios::beg);
-                        i = 0;
-                        break;
-                    }
-                }
-            }
+            h264_file.write((char*)pes->payload_data(), pes->payload_size());
         }
     }
     if ((std::size_t)h264_file.tellp() == 0)
