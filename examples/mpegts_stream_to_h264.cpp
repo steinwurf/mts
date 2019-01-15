@@ -120,17 +120,17 @@ struct receiver
         m_callback = callback;
     }
 
-    private:
+private:
 
-        boost::asio::ip::udp::socket m_socket;
-        std::vector<uint8_t> m_receive_buffer;
+    boost::asio::ip::udp::socket m_socket;
+    std::vector<uint8_t> m_receive_buffer;
 
-        mts::parser m_parser;
-        mts::packetizer m_packetizer;
-        std::vector<mts::stream_type> m_types;
-        std::vector<uint8_t> m_buffer;
+    mts::parser m_parser;
+    mts::packetizer m_packetizer;
+    std::vector<mts::stream_type> m_types;
+    std::vector<uint8_t> m_buffer;
 
-        std::function<void(const uint8_t*, uint32_t)> m_callback;
+    std::function<void(const uint8_t*, uint32_t)> m_callback;
 };
 
 
@@ -156,7 +156,8 @@ int main(int argc, char* argv[])
 
     receiver r(io_service, ip, port);
 
-    std::thread io_thread([&io_service](){
+    std::thread io_thread([&io_service]()
+    {
         io_service.run();
     });
 
