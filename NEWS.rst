@@ -6,6 +6,10 @@ every change, see the Git log.
 
 Latest
 ------
+* tbd
+
+4.2.0
+-----
 * Minor: Added Packetizer.
 * Patch: Fixed PES packet issue with it's size being limited to``uint16_t``.
 
