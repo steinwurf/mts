@@ -14,14 +14,6 @@
         "sources": ["github.com/steinwurf/bnb.git"]
     },
     {
-        "name": "nalu",
-        "internal": true,
-        "resolver": "git",
-        "method": "semver",
-        "major": 4,
-        "sources": ["gitlab.com/steinwurf/nalu.git"]
-    },
-    {
         "name": "gtest",
         "internal": true,
         "resolver": "git",

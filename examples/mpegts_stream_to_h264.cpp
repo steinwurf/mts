@@ -14,8 +14,7 @@
 #include <mts/pes.hpp>
 #include <mts/stream_type.hpp>
 #include <mts/stream_type_to_string.hpp>
-
-#include <nalu/to_annex_b_nalus.hpp>
+#include <mts/packetizer.hpp>
 
 struct receiver
 {
@@ -27,6 +26,9 @@ receiver(
     m_receive_buffer(65001),
     m_parser(188)
 {
+    m_packetizer.set_on_data(
+        std::bind(&receiver::parse_ts_packet, this, std::placeholders::_1));
+
     boost::asio::ip::udp::endpoint endpoint = { ip, port };
 
     m_socket.open(endpoint.protocol());
@@ -63,96 +65,15 @@ void handle_async_receive(const boost::system::error_code& ec, uint32_t bytes)
 {
     if (ec)
         return;
-    handle_data(m_receive_buffer.data(), bytes);
+
+    m_packetizer.read(m_receive_buffer.data(), bytes);
     do_async_receive();
 }
 
-void handle_data(const uint8_t* data, uint32_t size)
+void parse_ts_packet(const uint8_t* data)
 {
-    uint32_t offset = 0;
-    if (!m_buffer.empty())
-    {
-        auto missing = 188 - m_buffer.size();
-
-        if (missing > size)
-            missing = size;
-
-        m_buffer.insert(m_buffer.end(), data, data + missing);
-
-        if (m_buffer.size() < 188)
-        {
-            std::cout << "The buffer is too small " << m_buffer.size()
-                      << " - wait for more data." << std::endl;
-            return;
-        }
-
-        std::error_code error;
-        mts::ts_packet::parse(m_buffer.data(), m_buffer.size(), error);
-        if (error)
-        {
-            std::cout << "Buffer corrupted - throw away." << std::endl;
-            m_buffer.clear();
-        }
-        else
-        {
-            offset = missing;
-        }
-    }
-    bool next_packet_corrupted = false;
-    while (offset < size)
-    {
-        std::error_code error;
-        mts::ts_packet::parse(data + offset, size - offset, error);
-        if (error)
-        {
-            offset++;
-            if (!m_buffer.empty())
-            {
-                std::cout << "Next packet corrupted - throw away buffer" << std::endl;
-                std::cout << "Was at " << offset << " starting over.." << std::endl;
-
-                m_buffer.clear();
-                offset = 0;
-                next_packet_corrupted = true;
-            }
-            continue;
-        }
-        break;
-    }
-    if (next_packet_corrupted)
-        std::cout << "Found new entry point at " << offset << std::endl;
-
-
-    // Read remaining
-    if (!m_buffer.empty())
-    {
-        assert(m_buffer.size() == 188);
-        std::error_code error;
-        parse_ts_packet(m_buffer.data(), error);
-        m_buffer.clear();
-    }
-
-    auto remaining_ts_packets = (size - offset) / 188;
-    for (uint32_t i = 0; i < remaining_ts_packets; i++)
-    {
-        std::error_code error;
-        parse_ts_packet(data + offset, error);
-        if (error)
-        {
-            std::cout << "Got invalid packet." << std::endl;
-        }
-        offset += 188;
-    }
-
-    // Buffer remaining
-    assert(m_buffer.empty());
-    // std::cout << "Leftovers: " << (size - offset) << std::endl;
-    m_buffer.insert(m_buffer.begin(), data + offset, data + size);
-}
-
-
-void parse_ts_packet(const uint8_t* data, std::error_code& error)
-{
+    assert(data[0] == 0x47);
+    std::error_code error;
     m_parser.read(data, error);
     if (error)
     {
@@ -201,6 +122,7 @@ private:
     std::vector<uint8_t> m_receive_buffer;
 
     mts::parser m_parser;
+    mts::packetizer m_packetizer;
     std::vector<mts::stream_type> m_stream_types;
     std::vector<uint8_t> m_buffer;
 
@@ -212,7 +134,7 @@ int main(int argc, char* argv[])
 {
     if (argc != 4 || std::string(argv[1]) == "--help")
     {
-        auto usage = "./mpegts_stream_to_h264 STREAIP STREAPORT H264_OUTPUT";
+        auto usage = "./mpegts_stream_to_h264 STREAM_IP STREAM_PORT H264_OUTPUT";
         std::cout << usage << std::endl;
         return 0;
     }
@@ -238,30 +160,7 @@ int main(int argc, char* argv[])
     bool found_pps = false;
     r.set_callback([&h264_file, &found_sps, &found_pps](auto data, auto size)
     {
-        if (found_sps && found_pps)
-        {
-            std::cout << ".";
-            h264_file.write((char*)data, size);
-            return;
-        }
-
-        for (auto& nalu : nalu::to_annex_b_nalus(data, size))
-        {
-            if (!found_sps && nalu.m_type == nalu::type::sequence_parameter_set)
-            {
-                found_sps = true;
-                h264_file.write((char*)nalu.m_data, nalu.m_size);
-            }
-            if (!found_pps && nalu.m_type == nalu::type::picture_parameter_set)
-            {
-                found_pps = true;
-                h264_file.write((char*)nalu.m_data, nalu.m_size);
-            }
-        }
-        if (found_sps && found_pps)
-        {
-            std::cout << "Stream ready!" << std::endl;
-        }
+        h264_file.write((char*)data, size);
     });
     r.do_async_receive();
 
