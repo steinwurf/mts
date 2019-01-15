@@ -47,7 +47,7 @@ TEST(test_packetizer, packets_of_size_187)
     auto offset = 0;
     for (const auto& test_packet : test_packets)
     {
-        for(auto sync_index : test_packet)
+        for (auto sync_index : test_packet)
         {
             expected_data[offset + sync_index] = mts::packetizer::sync_byte();
         }
