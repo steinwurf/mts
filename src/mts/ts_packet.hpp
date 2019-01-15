@@ -53,7 +53,7 @@ public:
         if (ts_packet->has_adaptation_field())
         {
             auto adaptation_field = adaptation_field::parse(reader);
-            ts_packet->m_adaptation_field = std::move(adaptation_field);
+            ts_packet->m_adaptation_field = adaptation_field;
         }
 
         return ts_packet;

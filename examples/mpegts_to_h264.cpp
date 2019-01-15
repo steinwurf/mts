@@ -10,7 +10,7 @@
 #include <mts/pes.hpp>
 #include <mts/stream_type.hpp>
 
-#include <nalu/to_annex_b_nalus.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -23,28 +23,22 @@ int main(int argc, char* argv[])
 
     auto filename = std::string(argv[1]);
 
-    std::ifstream file(filename, std::ios::binary|std::ios::ate);
+    boost::iostreams::mapped_file_source file;
+    file.open(filename);
     assert(file.is_open());
 
     // Create the h264 output file
     std::ofstream h264_file(argv[2], std::ios::binary);
 
-    auto size = file.tellg();
-
-    file.seekg(0, std::ios::beg);
-
     auto packet_size = 188;
-
     mts::parser parser(packet_size);
-    std::vector<uint8_t> packet(packet_size);
 
-    bool found_sps = false;
-    bool found_pps = false;
-    for (uint32_t i = 0; i < size / packet.size(); ++i)
+    uint64_t offset = 0;
+    for (uint32_t i = 0; i < file.size() / packet_size; ++i)
     {
-        file.read((char*)packet.data(), packet.size());
         std::error_code error;
-        parser.read(packet.data(), error);
+        parser.read((uint8_t*)file.data() + offset, error);
+        offset += packet_size;
         if (parser.has_pes())
         {
             auto pid = parser.pes_pid();
@@ -58,48 +52,15 @@ int main(int argc, char* argv[])
             if (error)
                 continue;
 
-            if (found_sps && found_pps)
-            {
-                h264_file.write((char*)pes->payload_data(), pes->payload_size());
-                continue;
-            }
-
-            auto nalus = nalu::to_annex_b_nalus(
-                pes->payload_data(), pes->payload_size(), error);
-
-            if (error)
-                continue;
-
-            for (auto& nalu : nalus)
-            {
-                if (!found_sps)
-                {
-                    if (nalu.m_type == nalu::type::sequence_parameter_set)
-                    {
-                        found_sps = true;
-                        h264_file.write((char*)nalu.m_data, nalu.m_size);
-                    }
-                }
-                else if (!found_pps)
-                {
-                    if (nalu.m_type == nalu::type::picture_parameter_set)
-                    {
-                        found_pps = true;
-                        h264_file.write((char*)nalu.m_data, nalu.m_size);
-                        // found both sps and pps - reset
-                        parser.reset();
-                        file.seekg(0, std::ios::beg);
-                        i = 0;
-                        break;
-                    }
-                }
-            }
+            h264_file.write((char*)pes->payload_data(), pes->payload_size());
         }
     }
     if ((std::size_t)h264_file.tellp() == 0)
     {
         std::cout << "No H.264 data found." << std::endl;
     }
+
+    file.close();
     h264_file.close();
     return 0;
 }
