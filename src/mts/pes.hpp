@@ -46,7 +46,7 @@ public:
         if (reader.error())
             return nullptr;
 
-        uint32_t bytes_to_skip = read_packet_length;
+        uint64_t bytes_to_skip = read_packet_length;
         // A value of 0 indicates that the PES packet length is neither
         // specified nor bounded and is allowed only in PES packets whose
         // payload consists of bytes from a video elementary stream contained
