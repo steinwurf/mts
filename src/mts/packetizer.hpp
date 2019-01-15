@@ -18,7 +18,10 @@ class packetizer
 {
 public:
 
-    static const uint8_t sync_byte = 0x47;
+    static uint8_t sync_byte()
+    {
+        return 0x47;
+    }
 
 public:
 
@@ -111,7 +114,7 @@ public:
         assert(size != 0);
         if (m_verify)
             return m_verify(data, size);
-        return data[0] == sync_byte;
+        return data[0] == sync_byte();
     }
 
     void handle_data(const uint8_t* data) const

@@ -36,7 +36,7 @@ TEST(test_packetizer, packets_of_size_187)
 
     std::vector<uint8_t> result;
     packetizer.set_on_data([&result](auto data, auto size){
-        EXPECT_EQ(mts::packetizer::sync_byte, data[0]);
+        EXPECT_EQ(mts::packetizer::sync_byte(), data[0]);
         result.insert(result.end(), data, data + size);
     });
 
@@ -45,9 +45,9 @@ TEST(test_packetizer, packets_of_size_187)
     auto offset = 0;
     for(const auto& test_packet : test_packets)
     {
-        for(auto sync_packet_id : test_packet)
+        for(auto sync_index : test_packet)
         {
-            expected_data[offset + sync_packet_id] = mts::packetizer::sync_byte;
+            expected_data[offset + sync_index] = mts::packetizer::sync_byte();
         }
         packetizer.read(expected_data.data() + offset, packet_size);
         offset += packet_size;
