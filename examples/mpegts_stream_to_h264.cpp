@@ -156,9 +156,7 @@ int main(int argc, char* argv[])
         io_service.run();
     });
 
-    bool found_sps = false;
-    bool found_pps = false;
-    r.set_callback([&h264_file, &found_sps, &found_pps](auto data, auto size)
+    r.set_callback([&h264_file](auto data, auto size)
     {
         h264_file.write((char*)data, size);
     });
