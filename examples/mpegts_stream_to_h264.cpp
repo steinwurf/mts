@@ -61,7 +61,7 @@ void do_async_receive()
         std::bind(&receiver::handle_async_receive, this, _1, _2));
 }
 
-void handle_async_receive(const boost::system::error_code& ec, uint32_t bytes)
+void handle_async_receive(const boost::system::error_code& ec, size_t bytes)
 {
     if (ec)
         return;
