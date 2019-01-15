@@ -13,29 +13,31 @@ TEST(test_packetizer, packets_of_size_187)
     srand(static_cast<uint32_t>(time(0)));
 
     uint32_t packet_size = 187;
-    std::vector<std::vector<uint32_t>> test_packets = {
-        {0, 65},
-        {1, 155},
-        {2, 152},
-        {3},
-        {4, 71, 125},
-        {5, 116},
-        {6, 121},
-        {7},
-        {8, 155},
-        {2, 9},
-        {10, 28},
-        {11, 50},
-        {12},
-        {13, 179},
-        {14, 162, 172, 183},
-        {15}
-    };
+    std::vector<std::vector<uint32_t>> test_packets
+        {
+            {0, 65},
+            {1, 155},
+            {2, 152},
+            {3},
+            {4, 71, 125},
+            {5, 116},
+            {6, 121},
+            {7},
+            {8, 155},
+            {2, 9},
+            {10, 28},
+            {11, 50},
+            {12},
+            {13, 179},
+            {14, 162, 172, 183},
+            {15}
+        };
 
     mts::packetizer packetizer;
 
     std::vector<uint8_t> result;
-    packetizer.set_on_data([&result](auto data, auto size){
+    packetizer.set_on_data([&result](auto data, auto size)
+    {
         EXPECT_EQ(mts::packetizer::sync_byte(), data[0]);
         result.insert(result.end(), data, data + size);
     });
@@ -43,7 +45,7 @@ TEST(test_packetizer, packets_of_size_187)
     std::vector<uint8_t> expected_data(test_packets.size() * packet_size);
     std::generate(expected_data.begin(), expected_data.end(), rand);
     auto offset = 0;
-    for(const auto& test_packet : test_packets)
+    for (const auto& test_packet : test_packets)
     {
         for(auto sync_index : test_packet)
         {
