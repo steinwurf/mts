@@ -18,115 +18,119 @@
 
 struct receiver
 {
-receiver(
-    boost::asio::io_service& io_service,
-    const boost::asio::ip::address_v4& ip,
-    uint16_t port) :
-    m_socket(io_service),
-    m_receive_buffer(65001),
-    m_parser(188)
-{
-    m_packetizer.set_on_data(
-        std::bind(&receiver::parse_ts_packet, this, std::placeholders::_1));
-
-    boost::asio::ip::udp::endpoint endpoint = { ip, port };
-
-    m_socket.open(endpoint.protocol());
-    if (ip.is_multicast())
+    receiver(
+        boost::asio::io_service& io_service,
+        const boost::asio::ip::address_v4& ip,
+        uint16_t port) :
+        m_socket(io_service),
+        m_receive_buffer(65001),
+        m_parser(188)
     {
-        // bind to IF_ANY if multicast addr
-        m_socket.bind({endpoint.protocol(), port});
-        m_socket.set_option(boost::asio::ip::multicast::join_group(ip));
-    }
-    else if (ip == ip.broadcast()) // is broadcast
-    {
-        // bind to IF_ANY if broadcast addr
-        m_socket.bind({endpoint.protocol(), port});
-    }
-    else
-    {
-        // bind to specified address
-        m_socket.bind(endpoint);
-    }
-}
+        m_packetizer.set_on_data(
+            std::bind(&receiver::parse_ts_packet, this, std::placeholders::_1));
 
-void do_async_receive()
-{
-    if (!m_socket.is_open())
-        return;
+        boost::asio::ip::udp::endpoint endpoint = { ip, port };
 
-    using namespace std::placeholders;
-    m_socket.async_receive(
-        boost::asio::buffer(m_receive_buffer),
-        std::bind(&receiver::handle_async_receive, this, _1, _2));
-}
-
-void handle_async_receive(const boost::system::error_code& ec, size_t bytes)
-{
-    if (ec)
-        return;
-
-    m_packetizer.read(m_receive_buffer.data(), bytes);
-    do_async_receive();
-}
-
-void parse_ts_packet(const uint8_t* data)
-{
-    assert(data[0] == 0x47);
-    std::error_code error;
-    m_parser.read(data, error);
-    if (error)
-    {
-        return;
-    }
-
-    if (m_parser.has_pes())
-    {
-        auto pid = m_parser.pes_pid();
-        mts::stream_type type = (mts::stream_type)m_parser.stream_type(pid);
-        if (std::find(m_stream_types.begin(), m_stream_types.end(), type) == m_stream_types.end())
+        m_socket.open(endpoint.protocol());
+        if (ip.is_multicast())
         {
-            m_stream_types.push_back(type);
-            std::cout << "Found (" << pid << ") " << mts::stream_type_to_string(type) << std::endl;
+            // bind to IF_ANY if multicast addr
+            m_socket.bind({endpoint.protocol(), port});
+            m_socket.set_option(boost::asio::ip::multicast::join_group(ip));
         }
-        if (type != mts::stream_type::avc_video_stream)
+        else if (ip == ip.broadcast()) // is broadcast
         {
+            // bind to IF_ANY if broadcast addr
+            m_socket.bind({endpoint.protocol(), port});
+        }
+        else
+        {
+            // bind to specified address
+            m_socket.bind(endpoint);
+        }
+    }
+
+    void do_async_receive()
+    {
+        if (!m_socket.is_open())
             return;
-        }
 
-        auto& pes_data = m_parser.pes_data();
-        auto pes = mts::pes::parse(pes_data.data(), pes_data.size(), error);
+        using namespace std::placeholders;
+        m_socket.async_receive(
+            boost::asio::buffer(m_receive_buffer),
+            std::bind(&receiver::handle_async_receive, this, _1, _2));
+    }
+
+    void handle_async_receive(const boost::system::error_code& ec, size_t bytes)
+    {
+        if (ec)
+            return;
+
+        m_packetizer.read(m_receive_buffer.data(), bytes);
+        do_async_receive();
+    }
+
+    void parse_ts_packet(const uint8_t* data)
+    {
+        assert(data[0] == 0x47);
+        std::error_code error;
+        m_parser.read(data, error);
         if (error)
         {
-            std::cout << "Invalid PES" << std::endl;
             return;
         }
-        if (m_callback) m_callback(pes->payload_data(), pes->payload_size());
+
+        if (m_parser.has_pes())
+        {
+            auto pid = m_parser.pes_pid();
+            mts::stream_type t = (mts::stream_type)m_parser.stream_type(pid);
+            if (std::find(m_types.begin(), m_types.end(), t) == m_types.end())
+            {
+                m_types.push_back(t);
+                std::cout << "Found (" << pid << ") "
+                          << mts::stream_type_to_string(t) << std::endl;
+            }
+            if (t != mts::stream_type::avc_video_stream)
+            {
+                return;
+            }
+
+            auto& pes_data = m_parser.pes_data();
+            auto pes = mts::pes::parse(pes_data.data(), pes_data.size(), error);
+            if (error)
+            {
+                std::cout << "Invalid PES" << std::endl;
+                return;
+            }
+            if (m_callback)
+            {
+                m_callback(pes->payload_data(), pes->payload_size());
+            }
+        }
     }
-}
 
-void cancel()
-{
-    m_socket.cancel();
-    m_socket.close();
-}
+    void cancel()
+    {
+        m_socket.cancel();
+        m_socket.close();
+    }
 
-void set_callback(std::function<void(const uint8_t*, uint32_t)> callback)
-{
-    m_callback = callback;
-}
+    void set_callback(std::function<void(const uint8_t*, uint32_t)> callback)
+    {
+        m_callback = callback;
+    }
 
-private:
+    private:
 
-    boost::asio::ip::udp::socket m_socket;
-    std::vector<uint8_t> m_receive_buffer;
+        boost::asio::ip::udp::socket m_socket;
+        std::vector<uint8_t> m_receive_buffer;
 
-    mts::parser m_parser;
-    mts::packetizer m_packetizer;
-    std::vector<mts::stream_type> m_stream_types;
-    std::vector<uint8_t> m_buffer;
+        mts::parser m_parser;
+        mts::packetizer m_packetizer;
+        std::vector<mts::stream_type> m_types;
+        std::vector<uint8_t> m_buffer;
 
-    std::function<void(const uint8_t*, uint32_t)> m_callback;
+        std::function<void(const uint8_t*, uint32_t)> m_callback;
 };
 
 
