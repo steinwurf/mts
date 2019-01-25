@@ -7,6 +7,9 @@ every change, see the Git log.
 Latest
 ------
 * tbd
+
+5.0.0
+-----
 * Major: Upgrade bnb to version 6.
 
 4.2.0

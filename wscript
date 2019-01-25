@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 APPNAME = 'mts'
-VERSION = '4.2.0'
+VERSION = '5.0.0'
 
 
 def build(bld):
