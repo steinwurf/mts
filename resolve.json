@@ -10,7 +10,7 @@
         "name": "bnb",
         "resolver": "git",
         "method": "semver",
-        "major": 5,
+        "major": 6,
         "sources": ["github.com/steinwurf/bnb.git"]
     },
     {
