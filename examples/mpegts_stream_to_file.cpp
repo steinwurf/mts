@@ -21,8 +21,10 @@ struct receiver
     receiver(
         boost::asio::io_service& io_service,
         const boost::asio::ip::address_v4& ip,
-        uint16_t port) :
+        uint16_t port,
+        mts::stream_type type) :
         m_socket(io_service),
+        m_type(type),
         m_receive_buffer(65001),
         m_parser(188)
     {
@@ -90,7 +92,7 @@ struct receiver
                 std::cout << "Found (" << pid << ") "
                           << mts::stream_type_to_string(t) << std::endl;
             }
-            if (t != mts::stream_type::avc_video_stream)
+            if (t != m_type)
             {
                 return;
             }
@@ -123,6 +125,7 @@ struct receiver
 private:
 
     boost::asio::ip::udp::socket m_socket;
+    mts::stream_type m_type;
     std::vector<uint8_t> m_receive_buffer;
 
     mts::parser m_parser;
@@ -138,32 +141,49 @@ int main(int argc, char* argv[])
 {
     if (argc != 4 || std::string(argv[1]) == "--help")
     {
-        auto usage = "./mpegts_stream_to_h264 STREAM_IP STREAM_PORT H264_OUTPUT";
+        auto usage = "./mpegts_stream_to_file STREAM_IP STREAM_PORT OUTPUT.[h264|aac]";
         std::cout << usage << std::endl;
         return 0;
     }
 
     auto ip_string = std::string(argv[1]);
     auto port_string = std::string(argv[2]);
+    auto filename = std::string(argv[3]);
+    auto extension = filename.substr(filename.find_last_of(".") + 1);
 
-    std::cout << "Creating file " << argv[3] << std::endl;
-    // Create the h264 output file
-    std::ofstream h264_file(argv[3], std::ios::binary);
+    mts::stream_type type;
+    if (extension == "h264")
+    {
+        type = mts::stream_type::avc_video_stream;
+    }
+    else if (extension == "aac")
+    {
+        type = mts::stream_type::adts_transport_13818_7;
+    }
+    else
+    {
+        std::cout << "Unsupported extension '" << extension << "'" << std::endl;
+        return 1;
+    }
+
+    std::cout << "Creating file " << filename << std::endl;
+    // Create the output file
+    std::ofstream out_file(argv[3], std::ios::binary);
 
     boost::asio::io_service io_service;
     auto ip = boost::asio::ip::address_v4::from_string(ip_string);
     uint16_t port = std::stoi(port_string);
 
-    receiver r(io_service, ip, port);
+    receiver r(io_service, ip, port, type);
 
     std::thread io_thread([&io_service]()
     {
         io_service.run();
     });
 
-    r.set_callback([&h264_file](auto data, auto size)
+    r.set_callback([&out_file](auto data, auto size)
     {
-        h264_file.write((char*)data, size);
+        out_file.write((char*)data, size);
     });
     r.do_async_receive();
 
@@ -175,14 +195,14 @@ int main(int argc, char* argv[])
     io_thread.join();
     std::cout << "  Stopped." << std::endl;
 
-    if ((std::size_t)h264_file.tellp() == 0)
+    if ((std::size_t)out_file.tellp() == 0)
     {
-        std::cout << "No H.264 data found." << std::endl;
+        std::cout << "No " << mts::stream_type_to_string(type) << " data found." << std::endl;
     }
     else
     {
-        std::cout << "wrote " << h264_file.tellp() << "kb" << std::endl;
+        std::cout << "wrote " << out_file.tellp() << "kb" << std::endl;
     }
-    h264_file.close();
+    out_file.close();
     return 0;
 }
