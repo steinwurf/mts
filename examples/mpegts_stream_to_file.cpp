@@ -197,7 +197,8 @@ int main(int argc, char* argv[])
 
     if ((std::size_t)out_file.tellp() == 0)
     {
-        std::cout << "No " << mts::stream_type_to_string(type) << " data found." << std::endl;
+        std::cout << "No " << mts::stream_type_to_string(type)
+                  << " data found." << std::endl;
     }
     else
     {
