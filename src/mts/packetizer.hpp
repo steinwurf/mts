@@ -51,11 +51,11 @@ public:
 
             if (verify(m_buffer.data(), m_buffer.size()))
             {
-                // Buffer invalid
                 offset = missing;
             }
             else
             {
+                // Buffer invalid
                 m_buffer.clear();
             }
         }
@@ -98,7 +98,7 @@ public:
             {
                 // Corrupted package?
             }
-            offset += 188;
+            offset += m_packet_size;
         }
 
         // Buffer remaining
