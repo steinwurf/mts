@@ -16,6 +16,14 @@
 
 #include "ts_packet.hpp"
 
+
+
+
+#include <iostream>
+
+
+
+
 namespace mts
 {
 class parser
@@ -69,6 +77,7 @@ public:
 
                 if (ts_packet->continuity_counter() != expected_counter)
                 {
+                    m_continuity_errors += 1;
                     m_stream_states.erase(pid);
                     return;
                 }
@@ -190,6 +199,11 @@ public:
         return m_packet_size;
     }
 
+    uint32_t continuity_errors() const
+    {
+        return m_continuity_errors;
+    }
+
 private:
 
     bool has_stream_state(uint16_t pid) const
@@ -224,5 +238,6 @@ private:
 
     std::vector<uint8_t> m_pes_data;
     uint16_t m_pes_pid = 0;
+    uint32_t m_continuity_errors = 0;
 };
 }
