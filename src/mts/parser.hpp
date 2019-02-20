@@ -150,7 +150,7 @@ public:
                 if (error)
                     return;
 
-                m_programs[pid] = program;
+                m_programs[pid] = std::move(program);
                 return;
             }
         }
@@ -211,18 +211,18 @@ private:
         return m_stream_states.count(pid) != 0;
     }
 
-    std::shared_ptr<program::stream_entry> find_stream(uint16_t pid) const
+    program::stream_entry* find_stream(uint16_t pid) const
     {
         for (const auto& item : m_programs)
         {
-            auto program = item.second;
+            const auto& program = item.second;
             if (program == nullptr)
                 continue;
             for (const auto& stream_entry : program->stream_entries())
             {
                 if (pid == stream_entry->pid())
                 {
-                    return stream_entry;
+                    return stream_entry.get();
                 }
             }
         }
@@ -233,7 +233,7 @@ private:
 
     const uint32_t m_packet_size;
 
-    std::map<uint16_t, std::shared_ptr<program>> m_programs;
+    std::map<uint16_t, std::unique_ptr<program>> m_programs;
     std::map<uint16_t, stream_state> m_stream_states;
 
     std::vector<uint8_t> m_pes_data;

@@ -22,6 +22,16 @@
         "sources": ["github.com/steinwurf/gtest.git"]
     },
     {
+        "name": "gauge",
+        "internal": true,
+        "resolver": "git",
+        "method": "semver",
+        "major": 11,
+        "sources": [
+            "github.com/steinwurf/gauge.git"
+        ]
+    },
+    {
         "name": "boost",
         "internal": true,
         "resolver": "git",

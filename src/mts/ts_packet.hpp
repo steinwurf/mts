@@ -20,7 +20,7 @@ class ts_packet
 {
 public:
 
-    static std::shared_ptr<ts_packet> parse(
+    static std::unique_ptr<ts_packet> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
         bnb::stream_reader<endian::big_endian> reader(
@@ -28,10 +28,10 @@ public:
         return parse(reader);
     }
 
-    static std::shared_ptr<ts_packet> parse(
+    static std::unique_ptr<ts_packet> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto ts_packet = std::make_shared<mts::ts_packet>();
+        auto ts_packet = std::make_unique<mts::ts_packet>();
         uint8_t dummy = 0; // dummy variable to prevent endian from complaining.
         reader.read_bytes<1>(dummy).expect_eq(0x47); // sýnc byte
 
@@ -52,8 +52,7 @@ public:
 
         if (ts_packet->has_adaptation_field())
         {
-            auto adaptation_field = adaptation_field::parse(reader);
-            ts_packet->m_adaptation_field = adaptation_field;
+            ts_packet->m_adaptation_field = adaptation_field::parse(reader);
         }
 
         return ts_packet;
@@ -125,6 +124,6 @@ private:
     uint8_t m_adaptation_field_control = 0;
     uint8_t m_continuity_counter = 0;
 
-    std::shared_ptr<mts::adaptation_field> m_adaptation_field;
+    std::unique_ptr<mts::adaptation_field> m_adaptation_field;
 };
 }

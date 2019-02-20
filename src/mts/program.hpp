@@ -32,7 +32,7 @@ public:
 
     public:
 
-        static std::shared_ptr<stream_entry> parse(
+        static std::unique_ptr<stream_entry> parse(
             const uint8_t* data, uint64_t size, std::error_code& error)
         {
             bnb::stream_reader<endian::big_endian> reader(
@@ -40,10 +40,10 @@ public:
             return parse(reader);
         }
 
-        static std::shared_ptr<stream_entry> parse(
+        static std::unique_ptr<stream_entry> parse(
             bnb::stream_reader<endian::big_endian>& reader)
         {
-            auto stream_entry = std::make_shared<mts::program::stream_entry>();
+            auto stream_entry = std::make_unique<mts::program::stream_entry>();
             reader.read_bytes<1>(stream_entry->m_type);
 
             reader.read_bits<bitter::u16, bitter::msb0, 3, 13>()
@@ -104,7 +104,7 @@ public:
 
 public:
 
-    static std::shared_ptr<program> parse(
+    static std::unique_ptr<program> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
         bnb::stream_reader<endian::big_endian> reader(
@@ -112,10 +112,10 @@ public:
         return parse(reader);
     }
 
-    static std::shared_ptr<program> parse(
+    static std::unique_ptr<program> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto program = std::make_shared<mts::program>();
+        auto program = std::make_unique<mts::program>();
 
         reader.read_bytes<1>(program->m_table_id);
 
@@ -154,7 +154,7 @@ public:
             if (section_reader.error())
                 return nullptr;
 
-            program->m_stream_entries.push_back(stream);
+            program->m_stream_entries.push_back(std::move(stream));
         }
 
         section_reader.read_bytes<4>(program->m_crc);
@@ -166,7 +166,7 @@ public:
 
 public:
 
-    const std::vector<std::shared_ptr<stream_entry>>& stream_entries() const
+    const std::vector<std::unique_ptr<stream_entry>>& stream_entries() const
     {
         return m_stream_entries;
     }
@@ -234,7 +234,7 @@ private:
     uint16_t m_program_info_length = 0;
     const uint8_t* m_program_info_data = nullptr;
 
-    std::vector<std::shared_ptr<stream_entry>> m_stream_entries;
+    std::vector<std::unique_ptr<stream_entry>> m_stream_entries;
 
     uint32_t m_crc = 0;
 };

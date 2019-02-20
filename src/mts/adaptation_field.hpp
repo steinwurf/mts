@@ -18,7 +18,7 @@ class adaptation_field
 {
 public:
 
-    static std::shared_ptr<adaptation_field> parse(
+    static std::unique_ptr<adaptation_field> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
         bnb::stream_reader<endian::big_endian> reader(
@@ -26,10 +26,10 @@ public:
         return parse(reader);
     }
 
-    static std::shared_ptr<adaptation_field> parse(
+    static std::unique_ptr<adaptation_field> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto field = std::make_shared<mts::adaptation_field>();
+        auto field = std::make_unique<mts::adaptation_field>();
 
         reader.read_bytes<1>(field->m_length);
         if (field->m_length == 0)
