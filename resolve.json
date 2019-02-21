@@ -14,6 +14,13 @@
         "sources": ["github.com/steinwurf/bnb.git"]
     },
     {
+        "name": "recycle",
+        "resolver": "git",
+        "method": "semver",
+        "major": 4,
+        "sources": ["github.com/steinwurf/recycle.git"]
+    },
+    {
         "name": "gtest",
         "internal": true,
         "resolver": "git",
