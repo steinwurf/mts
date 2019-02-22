@@ -43,11 +43,11 @@ public:
 
         m_buffer.insert(m_buffer.end(), data, data + size);
 
-        while(m_buffer.size() > m_packet_size)
+        while (m_buffer.size() > m_packet_size)
         {
             auto byte = m_buffer.begin();
 
-            while(*byte != sync_byte())
+            while (*byte != sync_byte())
             {
                 byte++;
 
