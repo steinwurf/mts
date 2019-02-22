@@ -25,7 +25,6 @@ public:
 
         gauge::config_set cs = get_current_configuration();
         auto size = cs.get_value<uint32_t>("size");
-
         return size / time; // MB/s for each iteration
     }
 
@@ -103,7 +102,7 @@ private:
 // SimpleOnline
 //------------------------------------------------------------------
 
-BENCHMARK_F(parsing_benchmark, parsing, h264, 50);
+BENCHMARK_F(parsing_benchmark, parsing, h264, 10);
 
 /// Using this macro we may specify options. For specifying options
 /// we use the boost program options library. So you may additional
