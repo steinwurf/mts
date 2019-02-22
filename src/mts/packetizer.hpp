@@ -18,6 +18,10 @@ class packetizer
 {
 public:
 
+    using on_data_callback = std::function<void(const uint8_t*,uint32_t)>;
+
+public:
+
     static uint8_t sync_byte()
     {
         return 0x47;
@@ -25,7 +29,8 @@ public:
 
 public:
 
-    packetizer(uint32_t packet_size=188) :
+    packetizer(on_data_callback on_data, uint32_t packet_size=188) :
+        m_on_data(on_data),
         m_packet_size(packet_size)
     {
         assert(m_packet_size != 0);
@@ -123,11 +128,6 @@ public:
         return m_buffer.size();
     }
 
-    void set_on_data(std::function<void(const uint8_t*,uint32_t)> on_data)
-    {
-        m_on_data = on_data;
-    }
-
 private:
 
     inline bool verify(const uint8_t* data) const
@@ -144,8 +144,8 @@ private:
 
 private:
 
+    const on_data_callback m_on_data;
     const uint32_t m_packet_size;
     std::vector<uint8_t> m_buffer;
-    std::function<void(const uint8_t*,uint32_t)> m_on_data;
 };
 }

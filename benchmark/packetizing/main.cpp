@@ -69,8 +69,7 @@ public:
 
     void test_body() override
     {
-        mts::packetizer packetizer(188);
-        packetizer.set_on_data([](auto data, auto size) {
+        mts::packetizer packetizer([](auto data, auto size) {
             assert(data != nullptr);
             assert(size != 0U);
             assert(data[0] == 0x47);
