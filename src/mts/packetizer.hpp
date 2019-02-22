@@ -54,7 +54,7 @@ public:
                 return;
             }
 
-            if (verify(m_buffer.data(), m_buffer.size()))
+            if (verify(m_buffer.data()))
             {
                 offset = missing;
             }
@@ -68,7 +68,7 @@ public:
         // Find offset
         while ((size - offset) > 1)
         {
-            if (verify(data + offset, size - offset))
+            if (verify(data + offset))
             {
                 break;
             }
@@ -85,7 +85,7 @@ public:
         // Read buffer
         if (!m_buffer.empty())
         {
-            assert(verify(m_buffer.data(), m_packet_size));
+            assert(verify(m_buffer.data()));
             assert(m_buffer.size() == m_packet_size);
             handle_data(m_buffer.data());
             m_buffer.clear();
@@ -95,7 +95,7 @@ public:
         auto remaining_ts_packets = (size - offset) / m_packet_size;
         for (uint32_t i = 0; i < remaining_ts_packets; i++)
         {
-            if (verify(data + offset, m_packet_size))
+            if (verify(data + offset))
             {
                 handle_data(data + offset);
             }
@@ -130,16 +130,15 @@ public:
 
 private:
 
-    bool verify(const uint8_t* data, uint32_t size) const
+    inline bool verify(const uint8_t* data) const
     {
         assert(data != nullptr);
-        assert(size != 0);
         return data[0] == sync_byte();
     }
 
     void handle_data(const uint8_t* data) const
     {
-        assert(verify(data, m_packet_size));
+        assert(verify(data));
         m_on_data(data, m_packet_size);
     }
 
