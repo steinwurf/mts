@@ -4,5 +4,5 @@
 bld.program(
     features='cxx benchmark',
     source=['main.cpp'],
-    target='parsing',
+    target='packetizing',
     use=['mts', 'gauge', 'boost_iostreams'])

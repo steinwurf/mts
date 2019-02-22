@@ -27,10 +27,15 @@ public:
 
     packetizer(uint32_t packet_size=188) :
         m_packet_size(packet_size)
-    { }
+    {
+        assert(m_packet_size != 0);
+    }
 
     void read(const uint8_t* data, uint32_t size)
     {
+        assert(data != nullptr);
+        assert(size != 0);
+
         uint32_t offset = 0;
 
         // Fill remaining buffer
@@ -108,22 +113,6 @@ public:
         m_buffer.insert(m_buffer.begin(), data + offset, data + size);
     }
 
-    bool verify(const uint8_t* data, uint32_t size) const
-    {
-        assert(data != nullptr);
-        assert(size != 0);
-        if (m_verify)
-            return m_verify(data, size);
-        return data[0] == sync_byte();
-    }
-
-    void handle_data(const uint8_t* data) const
-    {
-        assert(verify(data, m_packet_size));
-        if (m_on_data)
-            m_on_data(data, m_packet_size);
-    }
-
     void reset()
     {
         m_buffer.clear();
@@ -139,9 +128,19 @@ public:
         m_on_data = on_data;
     }
 
-    void set_verify(std::function<bool(const uint8_t*,uint32_t)> verify)
+private:
+
+    bool verify(const uint8_t* data, uint32_t size) const
     {
-        m_verify = verify;
+        assert(data != nullptr);
+        assert(size != 0);
+        return data[0] == sync_byte();
+    }
+
+    void handle_data(const uint8_t* data) const
+    {
+        assert(verify(data, m_packet_size));
+        m_on_data(data, m_packet_size);
     }
 
 private:
@@ -149,6 +148,5 @@ private:
     const uint32_t m_packet_size;
     std::vector<uint8_t> m_buffer;
     std::function<void(const uint8_t*,uint32_t)> m_on_data;
-    std::function<bool(const uint8_t*,uint32_t)> m_verify;
 };
 }

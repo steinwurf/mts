@@ -21,3 +21,4 @@ def build(bld):
         bld.recurse('test')
         bld.recurse('examples')
         bld.recurse('benchmark/parsing')
+        bld.recurse('benchmark/packetizing')

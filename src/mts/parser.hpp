@@ -53,15 +53,15 @@ public:
 
         bnb::stream_reader<endian::big_endian> reader(
             data, m_packet_size, error);
-
-        auto ts_packet = mts::ts_packet::parse(reader);
+        auto res = mts::ts_packet::parse(reader);
         if (error)
             return;
+        auto& ts_packet = *res;
 
-        if (!ts_packet->has_payload_field())
+        if (!ts_packet.has_payload_field())
             return;
 
-        auto pid = ts_packet->pid();
+        auto pid = ts_packet.pid();
 
         if (has_stream(pid))
         {
@@ -75,7 +75,7 @@ public:
                 auto expected_counter =
                     (stream_state->m_last_continuity_counter + 1) % 16;
 
-                if (ts_packet->continuity_counter() != expected_counter)
+                if (ts_packet.continuity_counter() != expected_counter)
                 {
                     m_continuity_errors += 1;
                     m_stream_states.erase(pid);
@@ -85,7 +85,7 @@ public:
             }
 
             // extract data and create state
-            if (ts_packet->payload_unit_start_indicator())
+            if (ts_packet.payload_unit_start_indicator())
             {
                 // extract if state exists
                 if (has_stream_state(pid))
@@ -95,7 +95,7 @@ public:
                 }
                 // create new stream state
                 auto stream_state = m_stream_state_pool.allocate();
-                stream_state->m_last_continuity_counter = ts_packet->continuity_counter();
+                stream_state->m_last_continuity_counter = ts_packet.continuity_counter();
                 m_stream_states[pid] = std::move(stream_state);
             }
 
@@ -111,7 +111,7 @@ public:
             return;
         }
 
-        if (ts_packet->payload_unit_start_indicator())
+        if (ts_packet.payload_unit_start_indicator())
         {
             uint8_t pointer_field = 0;
             reader.read_bytes<1>(pointer_field);
@@ -136,7 +136,7 @@ public:
                 auto program_pid = program_entry.pid();
                 if (!m_programs.count(program_pid))
                 {
-                    m_programs.emplace(program_pid, nullptr);
+                    m_programs.emplace(program_pid, boost::none);
                 }
             }
         }
@@ -145,13 +145,13 @@ public:
             auto result = m_programs.find(pid);
             // if this is a program pid and the program we have hasn't been
             // initialized.
-            if (result != m_programs.end() && result->second == nullptr)
+            if (result != m_programs.end() && result->second == boost::none)
             {
                 auto program = mts::program::parse(reader);
                 if (error)
                     return;
 
-                m_programs[pid] = std::move(program);
+                m_programs[pid] = program;
                 return;
             }
         }
@@ -217,13 +217,13 @@ private:
         for (const auto& item : m_programs)
         {
             const auto& program = item.second;
-            if (program == nullptr)
+            if (program == boost::none)
                 continue;
             for (const auto& stream_entry : program->stream_entries())
             {
-                if (pid == stream_entry->pid())
+                if (pid == stream_entry.pid())
                 {
-                    return stream_entry.get();
+                    return &stream_entry;
                 }
             }
         }
@@ -236,7 +236,7 @@ private:
 
     pool_type m_stream_state_pool;
 
-    std::map<uint16_t, std::unique_ptr<program>> m_programs;
+    std::map<uint16_t, boost::optional<program>> m_programs;
     std::map<uint16_t, pool_type::pool_ptr> m_stream_states;
     pool_type::pool_ptr m_pes;
     uint16_t m_pes_pid = 0;

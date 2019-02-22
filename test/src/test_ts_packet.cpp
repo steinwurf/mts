@@ -23,7 +23,7 @@ TEST(test_ts_packet, read_and_verify)
             buffer.data(), buffer.size(), error);
         auto packet = mts::ts_packet::parse(reader);
         ASSERT_FALSE((bool)error);
-        ASSERT_NE(nullptr, packet);
+        ASSERT_NE(boost::none, packet);
 
         EXPECT_FALSE(packet->is_null_packet());
         EXPECT_FALSE(packet->has_adaptation_field());
@@ -42,7 +42,7 @@ TEST(test_ts_packet, read_and_verify)
             buffer.data(), buffer.size(), error);
         auto packet = mts::ts_packet::parse(reader);
         ASSERT_FALSE((bool)error);
-        ASSERT_NE(nullptr, packet);
+        ASSERT_NE(boost::none, packet);
 
         EXPECT_FALSE(packet->is_null_packet());
         EXPECT_FALSE(packet->has_adaptation_field());
@@ -61,7 +61,7 @@ TEST(test_ts_packet, read_and_verify)
             buffer.data(), buffer.size(), error);
         auto packet = mts::ts_packet::parse(reader);
         ASSERT_FALSE((bool)error);
-        ASSERT_NE(nullptr, packet);
+        ASSERT_NE(boost::none, packet);
 
         EXPECT_FALSE(packet->is_null_packet());
         EXPECT_FALSE(packet->has_adaptation_field());

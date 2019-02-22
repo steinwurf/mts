@@ -11,6 +11,7 @@
 
 #include <endian/big_endian.hpp>
 #include <bnb/stream_reader.hpp>
+#include <boost/optional.hpp>
 
 #include "adaptation_field.hpp"
 
@@ -20,39 +21,37 @@ class ts_packet
 {
 public:
 
-    static std::unique_ptr<ts_packet> parse(
+    static boost::optional<ts_packet> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
-        bnb::stream_reader<endian::big_endian> reader(
-            data, size, error);
+        bnb::stream_reader<endian::big_endian> reader(data, size, error);
         return parse(reader);
     }
 
-    static std::unique_ptr<ts_packet> parse(
-        bnb::stream_reader<endian::big_endian>& reader)
+    static boost::optional<ts_packet> parse(bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto ts_packet = std::make_unique<mts::ts_packet>();
+        mts::ts_packet ts_packet;
         uint8_t dummy = 0; // dummy variable to prevent endian from complaining.
         reader.read_bytes<1>(dummy).expect_eq(0x47); // sýnc byte
 
         reader.read_bits<bitter::u16, bitter::msb0, 1, 1, 1, 13>()
-        .get<0>(ts_packet->m_transport_error_indicator).expect_eq(false)
-        .get<1>(ts_packet->m_payload_unit_start_indicator)
-        .get<2>(ts_packet->m_transport_priority)
-        .get<3>(ts_packet->m_pid);
+        .get<0>(ts_packet.m_transport_error_indicator).expect_eq(false)
+        .get<1>(ts_packet.m_payload_unit_start_indicator)
+        .get<2>(ts_packet.m_transport_priority)
+        .get<3>(ts_packet.m_pid);
         reader.read_bits<bitter::u8, bitter::msb0, 2, 2, 4>()
-        .get<0>(ts_packet->m_transport_scrambling_control)
-        .get<1>(ts_packet->m_adaptation_field_control)
-        .get<2>(ts_packet->m_continuity_counter);
+        .get<0>(ts_packet.m_transport_scrambling_control)
+        .get<1>(ts_packet.m_adaptation_field_control)
+        .get<2>(ts_packet.m_continuity_counter);
 
         if (reader.error())
         {
-            return nullptr;
+            return boost::none;
         }
 
-        if (ts_packet->has_adaptation_field())
+        if (ts_packet.has_adaptation_field())
         {
-            ts_packet->m_adaptation_field = adaptation_field::parse(reader);
+            ts_packet.m_adaptation_field = adaptation_field::parse(reader);
         }
 
         return ts_packet;
@@ -107,10 +106,10 @@ public:
         return m_continuity_counter;
     }
 
-    mts::adaptation_field adaptation_field() const
+    const mts::adaptation_field& adaptation_field() const
     {
         assert(has_adaptation_field());
-        assert(m_adaptation_field != nullptr);
+        assert(m_adaptation_field != boost::none);
         return *m_adaptation_field;
     }
 
@@ -124,6 +123,6 @@ private:
     uint8_t m_adaptation_field_control = 0;
     uint8_t m_continuity_counter = 0;
 
-    std::unique_ptr<mts::adaptation_field> m_adaptation_field;
+    boost::optional<mts::adaptation_field> m_adaptation_field;
 };
 }
