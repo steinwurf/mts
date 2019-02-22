@@ -33,89 +33,47 @@ public:
         m_on_data(on_data),
         m_packet_size(packet_size)
     {
-        assert(m_packet_size != 0);
+        assert(m_packet_size > 0);
     }
 
     void read(const uint8_t* data, uint32_t size)
     {
         assert(data != nullptr);
-        assert(size != 0);
+        assert(size > 0);
 
-        uint32_t offset = 0;
+        m_buffer.insert(m_buffer.end(), data, data + size);
 
-        // Fill remaining buffer
-        if (!m_buffer.empty())
+        while(m_buffer.size() > m_packet_size)
         {
-            auto missing = m_packet_size - m_buffer.size();
+            auto byte = m_buffer.begin();
 
-            if (missing > size)
-                missing = size;
-
-            m_buffer.insert(m_buffer.end(), data, data + missing);
-
-            if (m_buffer.size() < m_packet_size)
+            while(*byte != sync_byte())
             {
-                // Not enough data available
-                return;
+                byte++;
+
+                // did not find sync byte, discard data
+                if (byte == m_buffer.end())
+                {
+                    m_buffer.clear();
+                    return;
+                }
             }
 
-            if (verify(m_buffer.data()))
+            m_buffer.erase(m_buffer.begin(), byte);
+
+            // if there is a sync byte in the expected place handle it,
+            // otherwise remove the sync byte at the beginning of the buffer
+            if (m_buffer[m_packet_size] == sync_byte())
             {
-                offset = missing;
+                handle_data(m_buffer.data());
+
+                m_buffer.erase(m_buffer.begin(), m_buffer.begin() + m_packet_size);
             }
             else
             {
-                // Buffer invalid
-                m_buffer.clear();
+                m_buffer.erase(m_buffer.begin(), m_buffer.begin() + 1);
             }
         }
-
-        // Find offset
-        while ((size - offset) > 1)
-        {
-            if (verify(data + offset))
-            {
-                break;
-            }
-
-            offset++;
-            if (!m_buffer.empty())
-            {
-                // buffer is probably corrupted.
-                m_buffer.clear();
-                offset = 0;
-            }
-        }
-
-        // Read buffer
-        if (!m_buffer.empty())
-        {
-            assert(verify(m_buffer.data()));
-            assert(m_buffer.size() == m_packet_size);
-            handle_data(m_buffer.data());
-            m_buffer.clear();
-        }
-
-        // Read remaining
-        auto remaining_ts_packets = (size - offset) / m_packet_size;
-        for (uint32_t i = 0; i < remaining_ts_packets; i++)
-        {
-            if (verify(data + offset))
-            {
-                handle_data(data + offset);
-            }
-            else
-            {
-                // Corrupted package?
-            }
-            offset += m_packet_size;
-        }
-
-        // Buffer remaining
-        assert(m_buffer.empty());
-        if (offset == size)
-            return;
-        m_buffer.insert(m_buffer.begin(), data + offset, data + size);
     }
 
     void reset()
@@ -130,22 +88,17 @@ public:
 
 private:
 
-    inline bool verify(const uint8_t* data) const
-    {
-        assert(data != nullptr);
-        return data[0] == sync_byte();
-    }
-
     void handle_data(const uint8_t* data) const
     {
-        assert(verify(data));
         m_on_data(data, m_packet_size);
     }
 
 private:
 
     const on_data_callback m_on_data;
+
     const uint32_t m_packet_size;
+
     std::vector<uint8_t> m_buffer;
 };
 }
