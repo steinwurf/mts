@@ -1,7 +1,7 @@
-// Copyright Steinwurf ApS 2018.
-// Distributed under the "STEINWURF EVALUATION LICENSE 1.0".
-// See accompanying file LICENSE.rst or
-// http://www.steinwurf.com/licensing
+// Copyright (c) Steinwurf ApS 2017.
+// All Rights Reserved
+//
+// Distributed under the "BSD License". See the accompanying LICENSE.rst file.
 
 #include <cassert>
 #include <cstdint>
@@ -13,7 +13,6 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <mts/parser.hpp>
 
-/// Benchmark for the initialization of different field implementations
 class parsing_benchmark : public gauge::time_benchmark
 {
 public:
@@ -107,10 +106,6 @@ private:
 
     boost::iostreams::mapped_file_source m_file;
 };
-
-//------------------------------------------------------------------
-// SimpleOnline
-//------------------------------------------------------------------
 
 BENCHMARK_F(parsing_benchmark, parsing, h264, 5);
 
