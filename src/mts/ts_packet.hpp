@@ -28,7 +28,8 @@ public:
         return parse(reader);
     }
 
-    static boost::optional<ts_packet> parse(bnb::stream_reader<endian::big_endian>& reader)
+    static boost::optional<ts_packet> parse(
+        bnb::stream_reader<endian::big_endian>& reader)
     {
         mts::ts_packet ts_packet;
         uint8_t dummy = 0; // dummy variable to prevent endian from complaining.

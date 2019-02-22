@@ -69,7 +69,8 @@ public:
 
     void test_body() override
     {
-        mts::packetizer packetizer([](auto data, auto size) {
+        mts::packetizer packetizer([](auto data, auto size)
+        {
             assert(data != nullptr);
             assert(size != 0U);
             assert(data[0] == 0x47);
@@ -111,8 +112,10 @@ BENCHMARK_OPTION(arithmetic_options)
     gauge::po::options_description options;
 
     options.add_options()
-    ("filename", gauge::po::value<std::string>()->required(), "Set the file name")
-    ("packet_size", gauge::po::value<uint16_t>()->default_value(1490U), "Packet size");
+    ("filename", gauge::po::value<std::string>()->required(),
+     "Set the file name")
+    ("packet_size", gauge::po::value<uint16_t>()->default_value(1490U),
+     "Packet size");
 
     gauge::runner::instance().register_options(options);
 }
