@@ -45,34 +45,23 @@ public:
 
         while (m_buffer.size() > m_packet_size)
         {
-            auto byte = m_buffer.begin();
-
-            while (*byte != sync_byte())
-            {
-                byte++;
-
-                // did not find sync byte, discard data
-                if (byte == m_buffer.end())
-                {
-                    m_buffer.clear();
-                    return;
-                }
-            }
-
-            m_buffer.erase(m_buffer.begin(), byte);
-
-            // if there is a sync byte in the expected place handle it,
-            // otherwise remove the sync byte at the beginning of the buffer
-            if (m_buffer[m_packet_size] == sync_byte())
+            // check if the head of our buffer is a valid mts packet
+            if (m_buffer[0] == sync_byte() && m_buffer[m_packet_size] == sync_byte())
             {
                 handle_data(m_buffer.data());
 
                 m_buffer.erase(m_buffer.begin(), m_buffer.begin() + m_packet_size);
+                continue;
             }
-            else
+
+            auto byte = m_buffer.begin();
+
+            while (*byte != sync_byte() && byte != m_buffer.end())
             {
-                m_buffer.erase(m_buffer.begin(), m_buffer.begin() + 1);
+                byte++;
             }
+
+            m_buffer.erase(m_buffer.begin(), byte);
         }
     }
 
