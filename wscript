@@ -20,3 +20,5 @@ def build(bld):
         # i.e. not when included as a dependency
         bld.recurse('test')
         bld.recurse('examples')
+        bld.recurse('benchmark/parsing')
+        bld.recurse('benchmark/packetizing')

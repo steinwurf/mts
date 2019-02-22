@@ -1,0 +1,8 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+bld.program(
+    features='cxx benchmark',
+    source=['main.cpp'],
+    target='packetizing',
+    use=['mts', 'gauge', 'boost_iostreams'])

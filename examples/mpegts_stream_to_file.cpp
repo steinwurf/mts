@@ -26,10 +26,10 @@ struct receiver
         m_socket(io_service),
         m_type(type),
         m_receive_buffer(65001),
-        m_parser(188)
+        m_parser(188),
+        m_packetizer(std::bind(&receiver::parse_ts_packet, this, std::placeholders::_1))
     {
-        m_packetizer.set_on_data(
-            std::bind(&receiver::parse_ts_packet, this, std::placeholders::_1));
+
 
         boost::asio::ip::udp::endpoint endpoint = { ip, port };
 

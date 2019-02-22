@@ -9,6 +9,7 @@
 #include <cassert>
 #include <memory>
 #include <bnb/stream_reader.hpp>
+#include <boost/optional.hpp>
 
 #include "helper.hpp"
 
@@ -18,46 +19,45 @@ class adaptation_field
 {
 public:
 
-    static std::shared_ptr<adaptation_field> parse(
+    static boost::optional<adaptation_field> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
-        bnb::stream_reader<endian::big_endian> reader(
-            data, size, error);
+        bnb::stream_reader<endian::big_endian> reader(data, size, error);
         return parse(reader);
     }
 
-    static std::shared_ptr<adaptation_field> parse(
+    static boost::optional<adaptation_field> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto field = std::make_shared<mts::adaptation_field>();
+        mts::adaptation_field field;
 
-        reader.read_bytes<1>(field->m_length);
-        if (field->m_length == 0)
+        reader.read_bytes<1>(field.m_length);
+        if (field.m_length == 0)
             return field;
-        auto adaptation_field = reader.skip(field->m_length);
+        auto adaptation_field = reader.skip(field.m_length);
 
         adaptation_field
         .read_bits<bitter::u8, bitter::msb0, 1, 1, 1, 1, 1, 1, 1, 1>()
-        .get<0>(field->m_discontinuity_indicator)
-        .get<1>(field->m_random_access_indicator)
-        .get<2>(field->m_elementary_stream_priority_indicator)
-        .get<3>(field->m_pcr_flag)
-        .get<4>(field->m_opcr_flag)
-        .get<5>(field->m_splicing_point_flag)
-        .get<6>(field->m_transport_private_data_flag)
-        .get<7>(field->m_adaptation_field_extension_flag);
+        .get<0>(field.m_discontinuity_indicator)
+        .get<1>(field.m_random_access_indicator)
+        .get<2>(field.m_elementary_stream_priority_indicator)
+        .get<3>(field.m_pcr_flag)
+        .get<4>(field.m_opcr_flag)
+        .get<5>(field.m_splicing_point_flag)
+        .get<6>(field.m_transport_private_data_flag)
+        .get<7>(field.m_adaptation_field_extension_flag);
 
-        if (field->m_pcr_flag)
+        if (field.m_pcr_flag)
         {
             uint64_t pcr_base = 0;
             uint16_t pcr_extension = 0;
             adaptation_field.read_bits<bitter::u48, bitter::msb0, 33, 6, 9>()
             .get<0>(pcr_base)
             .get<2>(pcr_extension);
-            field->m_program_clock_reference = pcr_base * 300 + pcr_extension;
+            field.m_program_clock_reference = pcr_base * 300 + pcr_extension;
         }
 
-        if (field->m_opcr_flag)
+        if (field.m_opcr_flag)
         {
             uint64_t opcr_base = 0;
             uint16_t opcr_extension = 0;
@@ -65,25 +65,25 @@ public:
             adaptation_field.read_bits<bitter::u48, bitter::msb0, 33, 6, 9>()
             .get<0>(opcr_base)
             .get<2>(opcr_extension);
-            field->m_original_program_clock_reference =
+            field.m_original_program_clock_reference =
                 opcr_base * 300 + opcr_extension;
         }
 
-        if (field->m_splicing_point_flag)
+        if (field.m_splicing_point_flag)
         {
-            adaptation_field.read_bytes<1>(field->m_splice_countdown);
+            adaptation_field.read_bytes<1>(field.m_splice_countdown);
         }
-        if (field->m_transport_private_data_flag)
+        if (field.m_transport_private_data_flag)
         {
             adaptation_field.read_bytes<1>(
-                field->m_transport_private_data_length);
+                field.m_transport_private_data_length);
 
             auto transport_private_data = adaptation_field.skip(
-                field->m_transport_private_data_length);
+                field.m_transport_private_data_length);
 
-            field->m_transport_private_data = transport_private_data.data();
+            field.m_transport_private_data = transport_private_data.data();
         }
-        if (field->m_adaptation_field_extension_flag)
+        if (field.m_adaptation_field_extension_flag)
         {
             uint8_t adaptation_field_extension_length = 0;
             adaptation_field.read_bytes<1>(
@@ -94,26 +94,26 @@ public:
 
             adaptation_field_extension
             .read_bits<bitter::u8, bitter::msb0, 1, 1, 1, 5>()
-            .get<0>(field->m_ltw_flag)
-            .get<1>(field->m_piecewise_rate_flag)
-            .get<2>(field->m_seamless_splice_flag);
+            .get<0>(field.m_ltw_flag)
+            .get<1>(field.m_piecewise_rate_flag)
+            .get<2>(field.m_seamless_splice_flag);
 
-            if (field->m_ltw_flag)
+            if (field.m_ltw_flag)
             {
                 adaptation_field_extension
                 .read_bits<bitter::u16, bitter::msb0, 1, 15>()
-                .get<0>(field->m_ltw_valid_flag)
-                .get<1>(field->m_ltw_offset);
+                .get<0>(field.m_ltw_valid_flag)
+                .get<1>(field.m_ltw_offset);
             }
 
-            if (field->m_piecewise_rate_flag)
+            if (field.m_piecewise_rate_flag)
             {
                 adaptation_field_extension
                 .read_bits<bitter::u24, bitter::msb0, 2, 22>()
-                .get<1>(field->m_piecewise_rate);
+                .get<1>(field.m_piecewise_rate);
             }
 
-            if (field->m_seamless_splice_flag)
+            if (field.m_seamless_splice_flag)
             {
 
                 uint8_t dts_next_au_32_30 = 0;
@@ -121,11 +121,11 @@ public:
                 uint16_t dts_next_au_14_0 = 0;
                 adaptation_field_extension
                 .read_bits<bitter::u40, bitter::msb0, 4, 3, 1, 15, 1, 15, 1>()
-                .get<0>(field->m_splice_type)
+                .get<0>(field.m_splice_type)
                 .get<1>(dts_next_au_32_30)
                 .get<3>(dts_next_au_29_15)
                 .get<5>(dts_next_au_14_0);
-                field->m_dts_next_au = helper::read_timestamp(
+                field.m_dts_next_au = helper::read_timestamp(
                     dts_next_au_32_30,
                     dts_next_au_29_15,
                     dts_next_au_14_0);
@@ -134,7 +134,7 @@ public:
 
         if (reader.error())
         {
-            return nullptr;
+            return boost::none;
         }
 
         return field;

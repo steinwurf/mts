@@ -33,10 +33,8 @@ TEST(test_packetizer, packets_of_size_187)
         {15}
     };
 
-    mts::packetizer packetizer;
-
     std::vector<uint8_t> result;
-    packetizer.set_on_data([&result](auto data, auto size)
+    mts::packetizer packetizer([&result](auto data, auto size)
     {
         EXPECT_EQ(mts::packetizer::sync_byte(), data[0]);
         result.insert(result.end(), data, data + size);

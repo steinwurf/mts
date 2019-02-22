@@ -18,6 +18,10 @@ class packetizer
 {
 public:
 
+    using on_data_callback = std::function<void(const uint8_t*,uint32_t)>;
+
+public:
+
     static uint8_t sync_byte()
     {
         return 0x47;
@@ -25,12 +29,18 @@ public:
 
 public:
 
-    packetizer(uint32_t packet_size=188) :
+    packetizer(on_data_callback on_data, uint32_t packet_size=188) :
+        m_on_data(on_data),
         m_packet_size(packet_size)
-    { }
+    {
+        assert(m_packet_size != 0);
+    }
 
     void read(const uint8_t* data, uint32_t size)
     {
+        assert(data != nullptr);
+        assert(size != 0);
+
         uint32_t offset = 0;
 
         // Fill remaining buffer
@@ -49,7 +59,7 @@ public:
                 return;
             }
 
-            if (verify(m_buffer.data(), m_buffer.size()))
+            if (verify(m_buffer.data()))
             {
                 offset = missing;
             }
@@ -63,7 +73,7 @@ public:
         // Find offset
         while ((size - offset) > 1)
         {
-            if (verify(data + offset, size - offset))
+            if (verify(data + offset))
             {
                 break;
             }
@@ -80,7 +90,7 @@ public:
         // Read buffer
         if (!m_buffer.empty())
         {
-            assert(verify(m_buffer.data(), m_packet_size));
+            assert(verify(m_buffer.data()));
             assert(m_buffer.size() == m_packet_size);
             handle_data(m_buffer.data());
             m_buffer.clear();
@@ -90,7 +100,7 @@ public:
         auto remaining_ts_packets = (size - offset) / m_packet_size;
         for (uint32_t i = 0; i < remaining_ts_packets; i++)
         {
-            if (verify(data + offset, m_packet_size))
+            if (verify(data + offset))
             {
                 handle_data(data + offset);
             }
@@ -108,22 +118,6 @@ public:
         m_buffer.insert(m_buffer.begin(), data + offset, data + size);
     }
 
-    bool verify(const uint8_t* data, uint32_t size) const
-    {
-        assert(data != nullptr);
-        assert(size != 0);
-        if (m_verify)
-            return m_verify(data, size);
-        return data[0] == sync_byte();
-    }
-
-    void handle_data(const uint8_t* data) const
-    {
-        assert(verify(data, m_packet_size));
-        if (m_on_data)
-            m_on_data(data, m_packet_size);
-    }
-
     void reset()
     {
         m_buffer.clear();
@@ -134,21 +128,24 @@ public:
         return m_buffer.size();
     }
 
-    void set_on_data(std::function<void(const uint8_t*,uint32_t)> on_data)
+private:
+
+    inline bool verify(const uint8_t* data) const
     {
-        m_on_data = on_data;
+        assert(data != nullptr);
+        return data[0] == sync_byte();
     }
 
-    void set_verify(std::function<bool(const uint8_t*,uint32_t)> verify)
+    void handle_data(const uint8_t* data) const
     {
-        m_verify = verify;
+        assert(verify(data));
+        m_on_data(data, m_packet_size);
     }
 
 private:
 
+    const on_data_callback m_on_data;
     const uint32_t m_packet_size;
     std::vector<uint8_t> m_buffer;
-    std::function<void(const uint8_t*,uint32_t)> m_on_data;
-    std::function<bool(const uint8_t*,uint32_t)> m_verify;
 };
 }

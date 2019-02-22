@@ -14,12 +14,29 @@
         "sources": ["github.com/steinwurf/bnb.git"]
     },
     {
+        "name": "recycle",
+        "resolver": "git",
+        "method": "semver",
+        "major": 4,
+        "sources": ["github.com/steinwurf/recycle.git"]
+    },
+    {
         "name": "gtest",
         "internal": true,
         "resolver": "git",
         "method": "semver",
         "major": 4,
         "sources": ["github.com/steinwurf/gtest.git"]
+    },
+    {
+        "name": "gauge",
+        "internal": true,
+        "resolver": "git",
+        "method": "semver",
+        "major": 11,
+        "sources": [
+            "github.com/steinwurf/gauge.git"
+        ]
     },
     {
         "name": "boost",

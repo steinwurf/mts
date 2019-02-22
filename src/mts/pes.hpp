@@ -12,6 +12,7 @@
 
 #include <endian/big_endian.hpp>
 #include <bnb/stream_reader.hpp>
+#include <boost/optional.hpp>
 
 #include "helper.hpp"
 #include "stream_type.hpp"
@@ -24,27 +25,26 @@ class pes
 {
 public:
 
-    static std::shared_ptr<pes> parse(
+    static boost::optional<pes> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
-        bnb::stream_reader<endian::big_endian> reader(
-            data, size, error);
+        bnb::stream_reader<endian::big_endian> reader(data, size, error);
         return parse(reader);
     }
 
-    static std::shared_ptr<pes> parse(
+    static boost::optional<pes> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto pes = std::make_shared<mts::pes>();
+        mts::pes pes;
 
-        reader.read_bytes<3>(pes->m_packet_start_code_prefix);
-        reader.read_bytes<1>(pes->m_stream_id);
+        reader.read_bytes<3>(pes.m_packet_start_code_prefix);
+        reader.read_bytes<1>(pes.m_stream_id);
 
         uint16_t read_packet_length = 0;
         reader.read_bytes<2>(read_packet_length);
 
         if (reader.error())
-            return nullptr;
+            return boost::none;
 
         uint64_t bytes_to_skip = read_packet_length;
         // A value of 0 indicates that the PES packet length is neither
@@ -59,39 +59,39 @@ public:
         }
 
         auto packet_reader = reader.skip(bytes_to_skip);
-        if (pes->m_stream_id != 0xbc && // program_stream_map
-            pes->m_stream_id != 0xbe && // padding_stream
-            pes->m_stream_id != 0xbf && // private_stream_2
-            pes->m_stream_id != 0xf0 && // ECM
-            pes->m_stream_id != 0xf1 && // EMM
-            pes->m_stream_id != 0xff && // program_stream_directory
-            pes->m_stream_id != 0xf2 && // DSMCC
-            pes->m_stream_id != 0xf8) // H.222.1 type E
+        if (pes.m_stream_id != 0xbc && // program_stream_map
+            pes.m_stream_id != 0xbe && // padding_stream
+            pes.m_stream_id != 0xbf && // private_stream_2
+            pes.m_stream_id != 0xf0 && // ECM
+            pes.m_stream_id != 0xf1 && // EMM
+            pes.m_stream_id != 0xff && // program_stream_directory
+            pes.m_stream_id != 0xf2 && // DSMCC
+            pes.m_stream_id != 0xf8) // H.222.1 type E
         {
             packet_reader
             .read_bits<bitter::u8, bitter::msb0, 2, 2, 1, 1, 1, 1>()
             .get<0>().expect_eq(0x02)
-            .get<1>(pes->m_scrambling_control)
-            .get<2>(pes->m_priority)
-            .get<3>(pes->m_data_alignment_indicator)
-            .get<4>(pes->m_copyright)
-            .get<5>(pes->m_original_or_copy);
+            .get<1>(pes.m_scrambling_control)
+            .get<2>(pes.m_priority)
+            .get<3>(pes.m_data_alignment_indicator)
+            .get<4>(pes.m_copyright)
+            .get<5>(pes.m_original_or_copy);
 
             packet_reader
             .read_bits<bitter::u8, bitter::msb0, 2, 1, 1, 1, 1, 1, 1>()
-            .get<0>(pes->m_pts_dts_flags).expect_ne(0x01)
-            .get<1>(pes->m_escr_flag)
-            .get<2>(pes->m_es_rate_flag)
-            .get<3>(pes->m_dsm_trick_mode_flag)
-            .get<4>(pes->m_additional_copy_info_flag)
-            .get<5>(pes->m_crc_flag)
-            .get<6>(pes->m_extension_flag);
+            .get<0>(pes.m_pts_dts_flags).expect_ne(0x01)
+            .get<1>(pes.m_escr_flag)
+            .get<2>(pes.m_es_rate_flag)
+            .get<3>(pes.m_dsm_trick_mode_flag)
+            .get<4>(pes.m_additional_copy_info_flag)
+            .get<5>(pes.m_crc_flag)
+            .get<6>(pes.m_extension_flag);
 
             uint8_t header_data_length = 0;
             packet_reader.read_bytes<1>(header_data_length);
             auto header_reader = packet_reader.skip(header_data_length);
 
-            if (pes->has_presentation_timestamp())
+            if (pes.has_presentation_timestamp())
             {
                 uint8_t ts_32_30 = 0;
                 uint16_t ts_29_15 = 0;
@@ -103,9 +103,9 @@ public:
                 .get<3>(ts_29_15)
                 .get<5>(ts_14_0);
 
-                pes->m_pts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
+                pes.m_pts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
-            if (pes->has_decoding_timestamp())
+            if (pes.has_decoding_timestamp())
             {
                 uint8_t ts_32_30 = 0;
                 uint16_t ts_29_15 = 0;
@@ -117,10 +117,10 @@ public:
                 .get<3>(ts_29_15)
                 .get<5>(ts_14_0);
 
-                pes->m_dts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
+                pes.m_dts = helper::read_timestamp(ts_32_30, ts_29_15, ts_14_0);
             }
 
-            if (pes->m_escr_flag)
+            if (pes.m_escr_flag)
             {
                 uint8_t escr_32_30 = 0;
                 uint16_t escr_29_15 = 0;
@@ -134,43 +134,43 @@ public:
                 .get<5>(escr_14_0)
                 .get<7>(escr_base);
 
-                pes->m_escr = helper::read_timestamp(
+                pes.m_escr = helper::read_timestamp(
                     escr_32_30, escr_29_15, escr_14_0) * 300 + escr_base;
             }
 
-            if (pes->m_es_rate_flag)
+            if (pes.m_es_rate_flag)
             {
                 header_reader
                 .read_bits<bitter::u24, bitter::msb0, 1, 22, 1>()
-                .get<1>(pes->m_es_rate);
+                .get<1>(pes.m_es_rate);
             }
 
-            if (pes->m_dsm_trick_mode_flag)
+            if (pes.m_dsm_trick_mode_flag)
             {
                 header_reader
                 .read_bits<bitter::u8, bitter::msb0, 3, 5>()
-                .get<0>(pes->m_trick_mode_control)
-                .get<1>(pes->m_trick_mode_data);
+                .get<0>(pes.m_trick_mode_control)
+                .get<1>(pes.m_trick_mode_data);
             }
 
-            if (pes->m_additional_copy_info_flag)
+            if (pes.m_additional_copy_info_flag)
             {
                 header_reader
                 .read_bits<bitter::u8, bitter::msb0, 1, 7>()
-                .get<1>(pes->m_additional_copy_info);
+                .get<1>(pes.m_additional_copy_info);
             }
 
-            if (pes->m_crc_flag)
+            if (pes.m_crc_flag)
             {
-                header_reader.read_bytes<2>(pes->m_previous_crc);
+                header_reader.read_bytes<2>(pes.m_previous_crc);
             }
         }
 
         if (reader.error())
-            return nullptr;
+            return boost::none;
 
-        pes->m_payload_data = packet_reader.remaining_data();
-        pes->m_payload_size = packet_reader.remaining_size();
+        pes.m_payload_data = packet_reader.remaining_data();
+        pes.m_payload_size = packet_reader.remaining_size();
 
         return pes;
     }

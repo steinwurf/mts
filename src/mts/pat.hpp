@@ -10,6 +10,7 @@
 #include <vector>
 #include <memory>
 
+#include <boost/optional.hpp>
 #include <endian/big_endian.hpp>
 #include <bnb/stream_reader.hpp>
 
@@ -49,53 +50,52 @@ private:
 
 public:
 
-    static std::shared_ptr<pat> parse(
+    static boost::optional<pat> parse(
         const uint8_t* data, uint64_t size, std::error_code& error)
     {
-        bnb::stream_reader<endian::big_endian> reader(
-            data, size, error);
+        bnb::stream_reader<endian::big_endian> reader(data, size, error);
         return parse(reader);
     }
 
-    static std::shared_ptr<pat> parse(
+    static boost::optional<pat> parse(
         bnb::stream_reader<endian::big_endian>& reader)
     {
-        auto pat = std::make_shared<mts::pat>();
+        mts::pat pat;
 
-        reader.read_bytes<1>(pat->m_table_id);
+        reader.read_bytes<1>(pat.m_table_id);
 
         uint16_t section_length = 0;
         reader.read_bits<bitter::u16, bitter::msb0, 1, 1, 2, 12>()
-        .get<0>(pat->m_section_syntax_indicator)
+        .get<0>(pat.m_section_syntax_indicator)
         .get<3>(section_length);
 
         auto section_reader = reader.skip(section_length);
 
-        section_reader.read_bytes<2>(pat->m_transport_stream_id);
+        section_reader.read_bytes<2>(pat.m_transport_stream_id);
         section_reader.read_bits<bitter::u8, bitter::msb0, 2, 5, 1>()
-        .get<1>(pat->m_version_number)
-        .get<2>(pat->m_current_next_indicator);
+        .get<1>(pat.m_version_number)
+        .get<2>(pat.m_current_next_indicator);
 
-        section_reader.read_bytes<1>(pat->m_section_number);
-        section_reader.read_bytes<1>(pat->m_last_section_number);
+        section_reader.read_bytes<1>(pat.m_section_number);
+        section_reader.read_bytes<1>(pat.m_last_section_number);
 
         while (
             !section_reader.error() &&
-            section_reader.remaining_size() > sizeof(pat->m_crc))
+            section_reader.remaining_size() > sizeof(pat.m_crc))
         {
             program_entry program;
             auto program_reader = section_reader.skip(4);
             program_reader.read_bytes<2>(program.m_program_number);
             program_reader.read_bits<bitter::u16, bitter::msb0, 3, 13>()
             .get<1>(program.m_pid);
-            pat->m_program_entries.push_back(program);
+            pat.m_program_entries.push_back(program);
         }
 
-        section_reader.read_bytes<4>(pat->m_crc);
+        section_reader.read_bytes<4>(pat.m_crc);
 
         if (section_reader.error())
         {
-            return nullptr;
+            return boost::none;
         }
         return pat;
     }

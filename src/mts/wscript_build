@@ -5,6 +5,6 @@ bld.stlib(
     features='cxx',
     source=bld.path.ant_glob('**/*.cpp'),
     target='mts',
-    use=['bnb_includes', 'bitter_includes'],
+    use=['bnb_includes', 'recycle_includes', 'boost_includes'],
     export_includes=['..']
 )
