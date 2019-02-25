@@ -54,8 +54,10 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
         offset += udp_packet_size;
     }
 
-    std::vector<uint8_t> expected_data = {
-        ts_data.begin() + data_offset, ts_data.end() - packetizer.buffered()};
+    std::vector<uint8_t> expected_data =
+        {
+            ts_data.begin() + data_offset, ts_data.end() - packetizer.buffered()
+        };
 
     EXPECT_NE(0U, result.size());
     EXPECT_EQ(expected_data, result);

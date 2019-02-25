@@ -28,7 +28,8 @@ public:
 
 public:
 
-    packetizer(on_data_callback on_data) : m_on_data(on_data)
+    packetizer(on_data_callback on_data) :
+        m_on_data(on_data)
     {
         assert(m_on_data);
     }
@@ -42,8 +43,9 @@ public:
 
         while (m_buffer.size() > packet_size)
         {
-            // check if the head of our buffer is a valid mts packet
-            if (m_buffer.at(0) == sync_byte && m_buffer.at(packet_size) == sync_byte)
+            // check if the head of our buffer is a valid ts packet
+            if (m_buffer.at(0) == sync_byte &&
+                m_buffer.at(packet_size) == sync_byte)
             {
                 m_on_data(m_buffer.data(), packet_size);
 
