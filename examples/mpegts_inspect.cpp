@@ -29,10 +29,8 @@ int main(int argc, char* argv[])
 
     file.seekg(0, std::ios::beg);
 
-    auto packet_size = 188;
-
-    mts::parser parser(packet_size);
-    std::vector<uint8_t> packet(packet_size);
+    mts::parser parser;
+    std::vector<uint8_t> packet(mts::parser::packet_size);
 
     std::map<mts::stream_type, uint32_t> stream_types;
     for (uint32_t i = 0; i < size / packet.size(); ++i)

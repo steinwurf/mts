@@ -23,18 +23,14 @@ public:
 
 public:
 
-    static uint8_t sync_byte()
-    {
-        return 0x47;
-    }
+    constexpr static uint32_t packet_size = 188;
+    constexpr static uint8_t sync_byte = 0x47;
 
 public:
 
-    packetizer(on_data_callback on_data, uint32_t packet_size=188) :
-        m_on_data(on_data),
-        m_packet_size(packet_size)
+    packetizer(on_data_callback on_data) : m_on_data(on_data)
     {
-        assert(m_packet_size > 0);
+        assert(m_on_data);
     }
 
     void read(const uint8_t* data, uint32_t size)
@@ -44,19 +40,19 @@ public:
 
         m_buffer.insert(m_buffer.end(), data, data + size);
 
-        while (m_buffer.size() > m_packet_size)
+        while (m_buffer.size() > packet_size)
         {
             // check if the head of our buffer is a valid mts packet
-            if (m_buffer[0] == sync_byte() && m_buffer[m_packet_size] == sync_byte())
+            if (m_buffer.at(0) == sync_byte && m_buffer.at(packet_size) == sync_byte)
             {
-                handle_data(m_buffer.data());
+                m_on_data(m_buffer.data(), packet_size);
 
-                m_buffer.erase(m_buffer.begin(), m_buffer.begin() + m_packet_size);
+                m_buffer.erase(m_buffer.begin(), m_buffer.begin() + packet_size);
                 continue;
             }
 
-            // if not a valid mts, we look for the next sync byte
-            auto it = std::find(++m_buffer.begin(), m_buffer.end(), sync_byte());
+            // if not a valid ts packet, we look for the next sync byte
+            auto it = std::find(m_buffer.begin() + 1, m_buffer.end(), sync_byte);
             m_buffer.erase(m_buffer.begin(), it);
         }
     }
@@ -66,24 +62,14 @@ public:
         m_buffer.clear();
     }
 
-    uint32_t buffered()
+    uint32_t buffered() const
     {
         return m_buffer.size();
     }
 
 private:
 
-    void handle_data(const uint8_t* data) const
-    {
-        m_on_data(data, m_packet_size);
-    }
-
-private:
-
     const on_data_callback m_on_data;
-
-    const uint32_t m_packet_size;
-
     std::vector<uint8_t> m_buffer;
 };
 }

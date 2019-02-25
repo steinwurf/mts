@@ -17,9 +17,8 @@ TEST(test_parser, test_ts_parsing)
     auto size = file.tellg();
 
     file.seekg(0, std::ios::beg);
-    auto packet_size = 188;
-    mts::parser parser(packet_size);
-    std::vector<uint8_t> packet(packet_size);
+    mts::parser parser;
+    std::vector<uint8_t> packet(mts::parser::packet_size);
     ASSERT_EQ(0U, size % packet.size());
 
     std::vector<uint16_t> first_pids =

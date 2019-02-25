@@ -66,17 +66,16 @@ public:
 
     void test_body() override
     {
-        auto packet_size = 188;
-        mts::parser parser(packet_size);
+        mts::parser parser;
         uint64_t offset = 0;
 
         RUN
         {
-            for (uint32_t i = 0; i < m_file.size() / packet_size; ++i)
+            for (uint32_t i = 0; i < m_file.size() / mts::parser::packet_size; ++i)
             {
                 std::error_code error;
                 parser.read((uint8_t*)m_file.data() + offset, error);
-                offset += packet_size;
+                offset += mts::parser::packet_size;
                 if (parser.has_pes())
                 {
                     auto pid = parser.pes_pid();
