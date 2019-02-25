@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 #include <functional>
+#include <algorithm>
 
 namespace mts
 {
@@ -54,14 +55,8 @@ public:
                 continue;
             }
 
-            auto byte = m_buffer.begin();
-
-            while (*byte != sync_byte() && byte != m_buffer.end())
-            {
-                byte++;
-            }
-
-            m_buffer.erase(m_buffer.begin(), byte);
+            auto it = std::find(m_buffer.begin(), m_buffer.end(), sync_byte());
+            m_buffer.erase(m_buffer.begin(), it);
         }
     }
 
