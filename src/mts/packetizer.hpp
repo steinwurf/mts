@@ -55,6 +55,7 @@ public:
                 continue;
             }
 
+            // if not a valid mts, we look for the next sync byte
             auto it = std::find(++m_buffer.begin(), m_buffer.end(), sync_byte());
             m_buffer.erase(m_buffer.begin(), it);
         }
