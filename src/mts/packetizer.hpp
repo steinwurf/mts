@@ -74,4 +74,9 @@ private:
     const on_data_callback m_on_data;
     std::vector<uint8_t> m_buffer;
 };
+// For compatibility with prior C++ International Standards, a constexpr static
+// data member may be redundantly redeclared outside the class with no initializer.
+// This usage is deprecated.
+constexpr uint32_t packetizer::packet_size;
+constexpr uint8_t packetizer::sync_byte;
 }
