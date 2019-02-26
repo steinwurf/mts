@@ -18,42 +18,45 @@ class packetizer
 {
 public:
 
-    using on_data_callback = std::function<void(const uint8_t*,uint32_t)>;
+    using on_data_callback = std::function<void(const uint8_t*,uint64_t)>;
 
 public:
 
-    static uint8_t sync_byte()
+    constexpr static uint64_t packet_size()
+    {
+        return 188;
+    }
+
+    constexpr static uint8_t sync_byte()
     {
         return 0x47;
     }
-
 public:
 
-    packetizer(on_data_callback on_data, uint32_t packet_size=188) :
-        m_on_data(on_data),
-        m_packet_size(packet_size)
+    packetizer(on_data_callback on_data) :
+        m_on_data(on_data)
     {
-        assert(m_packet_size != 0);
+        assert(m_on_data);
     }
 
-    void read(const uint8_t* data, uint32_t size)
+    void read(const uint8_t* data, uint64_t size)
     {
         assert(data != nullptr);
         assert(size != 0);
 
-        uint32_t offset = 0;
+        uint64_t offset = 0;
 
         // Fill remaining buffer
         if (!m_buffer.empty())
         {
-            auto missing = m_packet_size - m_buffer.size();
+            auto missing = packet_size() - m_buffer.size();
 
             if (missing > size)
                 missing = size;
 
             m_buffer.insert(m_buffer.end(), data, data + missing);
 
-            if (m_buffer.size() < m_packet_size)
+            if (m_buffer.size() < packet_size())
             {
                 // Not enough data available
                 return;
@@ -73,6 +76,7 @@ public:
         // Find offset
         while ((size - offset) > 1)
         {
+            assert(offset < size);
             if (verify(data + offset))
             {
                 break;
@@ -91,13 +95,13 @@ public:
         if (!m_buffer.empty())
         {
             assert(verify(m_buffer.data()));
-            assert(m_buffer.size() == m_packet_size);
+            assert(m_buffer.size() == packet_size());
             handle_data(m_buffer.data());
             m_buffer.clear();
         }
 
         // Read remaining
-        auto remaining_ts_packets = (size - offset) / m_packet_size;
+        auto remaining_ts_packets = (size - offset) / packet_size();
         for (uint32_t i = 0; i < remaining_ts_packets; i++)
         {
             if (verify(data + offset))
@@ -108,7 +112,7 @@ public:
             {
                 // Corrupted package?
             }
-            offset += m_packet_size;
+            offset += packet_size();
         }
 
         // Buffer remaining
@@ -123,7 +127,7 @@ public:
         m_buffer.clear();
     }
 
-    uint32_t buffered()
+    uint64_t buffered() const
     {
         return m_buffer.size();
     }
@@ -139,13 +143,12 @@ private:
     void handle_data(const uint8_t* data) const
     {
         assert(verify(data));
-        m_on_data(data, m_packet_size);
+        m_on_data(data, packet_size());
     }
 
 private:
 
     const on_data_callback m_on_data;
-    const uint32_t m_packet_size;
     std::vector<uint8_t> m_buffer;
 };
 }

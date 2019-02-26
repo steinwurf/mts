@@ -6,6 +6,7 @@ every change, see the Git log.
 
 Latest
 ------
+* Major: ``packet_size`` is no longer a constructor parameter.
 * Major: Removed ``set_verify`` from packetizer.
 * Major: Removed ``set_on_data`` from packetizer - this is not set via the
   contructor.

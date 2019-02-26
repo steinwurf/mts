@@ -56,45 +56,35 @@ public:
         add_configuration(cs);
     }
 
-    void setup() override
+    void test_body() override
     {
         gauge::config_set cs = get_current_configuration();
         auto filename = cs.get_value<std::string>("filename");
-        m_file.open(filename);
+        boost::iostreams::mapped_file_source file;
+        file.open(filename);
+        assert(file.is_open());
+        std::vector<uint8_t> buffer(file.data(), file.data() + file.size());
+        file.close();
 
-        m_packet_size = cs.get_value<uint16_t>("packet_size");
-        assert(m_file.is_open());
-    }
+        auto packet_size = cs.get_value<uint16_t>("packet_size");
 
-    void test_body() override
-    {
         mts::packetizer packetizer([](auto data, auto size)
         {
             assert(data != nullptr);
             assert(size != 0U);
             assert(data[0] == 0x47);
         });
-
+        const auto packets = buffer.size() / packet_size;
         uint64_t offset = 0;
         RUN
         {
-            for (uint32_t i = 0; i < m_file.size() / m_packet_size; ++i)
+            for (uint32_t i = 0; i < packets; ++i)
             {
-                packetizer.read((uint8_t*)m_file.data() + offset, m_packet_size);
-                offset += m_packet_size;
+                packetizer.read((uint8_t*)buffer.data() + offset, packet_size);
+                offset += packet_size;
             }
         }
     }
-
-    void tear_down() override
-    {
-        m_file.close();
-    }
-
-private:
-
-    boost::iostreams::mapped_file_source m_file;
-    uint16_t m_packet_size;
 };
 
 BENCHMARK_F(parsing_benchmark, parsing, h264, 10);
