@@ -5,7 +5,6 @@
 
 #include <mts/parser.hpp>
 
-#include <mts/packetizer.hpp>
 #include <fstream>
 
 #include <gtest/gtest.h>

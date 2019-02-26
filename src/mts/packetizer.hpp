@@ -18,11 +18,11 @@ class packetizer
 {
 public:
 
-    using on_data_callback = std::function<void(const uint8_t*,uint32_t)>;
+    using on_data_callback = std::function<void(const uint8_t*,uint64_t)>;
 
 public:
 
-    constexpr static uint32_t packet_size()
+    constexpr static uint64_t packet_size()
     {
         return 188;
     }
@@ -127,7 +127,7 @@ public:
         m_buffer.clear();
     }
 
-    uint32_t buffered() const
+    uint64_t buffered() const
     {
         return m_buffer.size();
     }
