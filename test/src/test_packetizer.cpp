@@ -4,6 +4,8 @@
 // Distributed under the "BSD License". See the accompanying LICENSE.rst file.
 
 #include <mts/packetizer.hpp>
+#include <mts/packetizer.hpp>
+#include <mts/packetizer.hpp>
 
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -43,7 +45,7 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
     std::vector<uint8_t> result;
     mts::packetizer packetizer([&result](auto data, auto size)
     {
-        EXPECT_EQ(mts::packetizer::sync_byte, data[0]);
+        EXPECT_EQ(mts::packetizer::sync_byte(), data[0]);
         result.insert(result.end(), data, data + size);
     });
 

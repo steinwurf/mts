@@ -74,14 +74,14 @@ public:
     {
         mts::parser parser;
         uint64_t offset = 0;
-        const auto packets = m_data.size() / mts::parser::packet_size;
+        const auto packets = m_data.size() / mts::parser::packet_size();
         RUN
         {
             for (uint32_t i = 0; i < packets; ++i)
             {
                 std::error_code error;
                 parser.read((uint8_t*)m_data.data() + offset, error);
-                offset += mts::parser::packet_size;
+                offset += mts::parser::packet_size();
                 if (parser.has_pes())
                 {
                     auto pid = parser.pes_pid();

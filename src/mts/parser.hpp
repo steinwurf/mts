@@ -33,7 +33,10 @@ public:
 
     using pool_type = recycle::unique_pool<stream_state>;
 
-    constexpr static uint32_t packet_size = 188;
+    constexpr static uint32_t packet_size()
+    {
+        return 188;
+    }
 
 public:
 
@@ -52,7 +55,8 @@ public:
             m_pes = nullptr;
         }
 
-        bnb::stream_reader<endian::big_endian> reader(data, packet_size, error);
+        bnb::stream_reader<endian::big_endian> reader(
+            data, packet_size(), error);
         auto res = mts::ts_packet::parse(reader);
         if (error)
             return;

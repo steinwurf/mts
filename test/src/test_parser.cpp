@@ -5,6 +5,7 @@
 
 #include <mts/parser.hpp>
 
+#include <mts/packetizer.hpp>
 #include <fstream>
 
 #include <gtest/gtest.h>
@@ -19,7 +20,7 @@ TEST(test_parser, test_ts_parsing)
     file.seekg(0, std::ios::beg);
 
     mts::parser parser;
-    std::vector<uint8_t> packet(mts::parser::packet_size);
+    std::vector<uint8_t> packet(mts::parser::packet_size());
 
     ASSERT_EQ(0U, size % packet.size());
 

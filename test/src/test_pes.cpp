@@ -20,7 +20,7 @@ TEST(test_pes, test_pes_parsing)
     file.seekg(0, std::ios::beg);
 
     mts::parser parser;
-    std::vector<uint8_t> packet(mts::parser::packet_size);
+    std::vector<uint8_t> packet(mts::parser::packet_size());
 
     ASSERT_EQ(0U, size % packet.size());
 

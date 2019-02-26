@@ -22,8 +22,15 @@ public:
 
 public:
 
-    constexpr static uint32_t packet_size = 188;
-    constexpr static uint8_t sync_byte = 0x47;
+    constexpr static uint32_t packet_size()
+    {
+        return 188;
+    }
+
+    constexpr static uint8_t sync_byte()
+    {
+        return 0x47;
+    }
 
 public:
 
@@ -43,14 +50,14 @@ public:
         // Fill remaining buffer
         if (!m_buffer.empty())
         {
-            auto missing = packet_size - m_buffer.size();
+            auto missing = packet_size() - m_buffer.size();
 
             if (missing > size)
                 missing = size;
 
             m_buffer.insert(m_buffer.end(), data, data + missing);
 
-            if (m_buffer.size() < packet_size)
+            if (m_buffer.size() < packet_size())
             {
                 // Not enough data available
                 return;
@@ -88,13 +95,13 @@ public:
         if (!m_buffer.empty())
         {
             assert(verify(m_buffer.data()));
-            assert(m_buffer.size() == packet_size);
+            assert(m_buffer.size() == packet_size());
             handle_data(m_buffer.data());
             m_buffer.clear();
         }
 
         // Read remaining
-        auto remaining_ts_packets = (size - offset) / packet_size;
+        auto remaining_ts_packets = (size - offset) / packet_size();
         for (uint32_t i = 0; i < remaining_ts_packets; i++)
         {
             if (verify(data + offset))
@@ -105,7 +112,7 @@ public:
             {
                 // Corrupted package?
             }
-            offset += packet_size;
+            offset += packet_size();
         }
 
         // Buffer remaining
@@ -130,13 +137,13 @@ private:
     inline bool verify(const uint8_t* data) const
     {
         assert(data != nullptr);
-        return data[0] == sync_byte;
+        return data[0] == sync_byte();
     }
 
     void handle_data(const uint8_t* data) const
     {
         assert(verify(data));
-        m_on_data(data, packet_size);
+        m_on_data(data, packet_size());
     }
 
 private:
@@ -144,11 +151,4 @@ private:
     const on_data_callback m_on_data;
     std::vector<uint8_t> m_buffer;
 };
-
-// For compatibility with prior C++ International Standards, a constexpr static
-// data member may be redundantly redeclared outside the class with no
-// initializer.
-// This usage is deprecated.
-constexpr uint32_t packetizer::packet_size;
-constexpr uint8_t packetizer::sync_byte;
 }

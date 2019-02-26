@@ -33,11 +33,11 @@ int main(int argc, char* argv[])
     mts::parser parser;
 
     uint64_t offset = 0;
-    for (uint32_t i = 0; i < file.size() / mts::parser::packet_size; ++i)
+    for (uint32_t i = 0; i < file.size() / mts::parser::packet_size(); ++i)
     {
         std::error_code error;
         parser.read((uint8_t*)file.data() + offset, error);
-        offset += mts::parser::packet_size;
+        offset += mts::parser::packet_size();
         if (parser.has_pes())
         {
             auto pid = parser.pes_pid();
