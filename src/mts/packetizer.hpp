@@ -31,7 +31,6 @@ public:
     {
         return 0x47;
     }
-
 public:
 
     packetizer(on_data_callback on_data) :
@@ -40,12 +39,12 @@ public:
         assert(m_on_data);
     }
 
-    void read(const uint8_t* data, uint32_t size)
+    void read(const uint8_t* data, uint64_t size)
     {
         assert(data != nullptr);
         assert(size != 0);
 
-        uint32_t offset = 0;
+        uint64_t offset = 0;
 
         // Fill remaining buffer
         if (!m_buffer.empty())
@@ -77,6 +76,7 @@ public:
         // Find offset
         while ((size - offset) > 1)
         {
+            assert(offset < size);
             if (verify(data + offset))
             {
                 break;

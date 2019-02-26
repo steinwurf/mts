@@ -55,32 +55,25 @@ public:
         add_configuration(cs);
     }
 
-
-    void init() override
+    void test_body() override
     {
-        gauge::time_benchmark::init();
-
         gauge::config_set cs = get_current_configuration();
         auto filename = cs.get_value<std::string>("filename");
         boost::iostreams::mapped_file_source file;
         file.open(filename);
         assert(file.is_open());
-        m_data.insert(m_data.begin(), file.data(), file.data() + file.size());
+        std::vector<uint8_t> buffer(file.data(), file.data() + file.size());
         file.close();
-    }
 
-
-    void test_body() override
-    {
         mts::parser parser;
         uint64_t offset = 0;
-        const auto packets = m_data.size() / mts::parser::packet_size();
+        const auto packets = buffer.size() / mts::parser::packet_size();
         RUN
         {
             for (uint32_t i = 0; i < packets; ++i)
             {
                 std::error_code error;
-                parser.read((uint8_t*)m_data.data() + offset, error);
+                parser.read((uint8_t*)buffer.data() + offset, error);
                 offset += mts::parser::packet_size();
                 if (parser.has_pes())
                 {
@@ -101,10 +94,6 @@ public:
             }
         }
     }
-
-private:
-
-    std::vector<uint8_t> m_data;
 };
 
 BENCHMARK_F(parsing_benchmark, parsing, h264, 5);
