@@ -55,28 +55,33 @@ public:
         add_configuration(cs);
     }
 
-    void setup() override
+
+    void init() override
     {
+        gauge::time_benchmark::init();
 
         gauge::config_set cs = get_current_configuration();
         auto filename = cs.get_value<std::string>("filename");
-        m_file.open(filename);
-        assert(m_file.is_open());
+        boost::iostreams::mapped_file_source file;
+        file.open(filename);
+        assert(file.is_open());
+        m_data.insert(m_data.begin(), file.data(), file.data() + file.size());
+        file.close();
     }
+
 
     void test_body() override
     {
-        auto packet_size = 188;
-        mts::parser parser(packet_size);
+        mts::parser parser;
         uint64_t offset = 0;
-
+        const auto packets = m_data.size() / mts::parser::packet_size;
         RUN
         {
-            for (uint32_t i = 0; i < m_file.size() / packet_size; ++i)
+            for (uint32_t i = 0; i < packets; ++i)
             {
                 std::error_code error;
-                parser.read((uint8_t*)m_file.data() + offset, error);
-                offset += packet_size;
+                parser.read((uint8_t*)m_data.data() + offset, error);
+                offset += mts::parser::packet_size;
                 if (parser.has_pes())
                 {
                     auto pid = parser.pes_pid();
@@ -97,14 +102,9 @@ public:
         }
     }
 
-    void tear_down() override
-    {
-        m_file.close();
-    }
-
 private:
 
-    boost::iostreams::mapped_file_source m_file;
+    std::vector<uint8_t> m_data;
 };
 
 BENCHMARK_F(parsing_benchmark, parsing, h264, 5);

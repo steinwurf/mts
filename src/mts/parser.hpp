@@ -33,10 +33,11 @@ public:
 
     using pool_type = recycle::unique_pool<stream_state>;
 
+    constexpr static uint32_t packet_size = 188;
+
 public:
 
-    parser(uint32_t packet_size=188U) :
-        m_packet_size(packet_size),
+    parser() :
         m_stream_state_pool(
             pool_type::allocate_function(std::make_unique<stream_state>),
             [](auto& o) { o->m_data.resize(0); })
@@ -51,8 +52,7 @@ public:
             m_pes = nullptr;
         }
 
-        bnb::stream_reader<endian::big_endian> reader(
-            data, m_packet_size, error);
+        bnb::stream_reader<endian::big_endian> reader(data, packet_size, error);
         auto res = mts::ts_packet::parse(reader);
         if (error)
             return;
@@ -195,11 +195,6 @@ public:
         return static_cast<mts::stream_type>(stream_entry->type());
     }
 
-    uint32_t packet_size() const
-    {
-        return m_packet_size;
-    }
-
     uint32_t continuity_errors() const
     {
         return m_continuity_errors;
@@ -231,8 +226,6 @@ private:
     }
 
 private:
-
-    const uint32_t m_packet_size;
 
     pool_type m_stream_state_pool;
 
