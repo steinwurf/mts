@@ -69,6 +69,12 @@ def run_tests(properties):
     run_command(command)
 
 
+    # Tun the benchmarks (using the test.ts) file after the unit tests
+    command = [sys.executable, 'waf', '-v']
+    command += ['--run_benchmarks']
+    run_command(command)
+
+
 def install(properties):
     command = [sys.executable, 'waf', '-v', 'install']
 

@@ -5,4 +5,5 @@ bld.program(
     features='cxx benchmark',
     source=['main.cpp'],
     target='parsing',
-    use=['mts', 'gauge', 'boost_iostreams'])
+    use=['mts', 'gauge', 'boost_iostreams'],
+    test_files=['../../test/test.ts'])
