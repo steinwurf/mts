@@ -11,8 +11,6 @@
 #include <functional>
 #include <algorithm>
 
-#include <iostream>
-
 namespace mts
 {
 /// Reads packets of abitray size and then constructs packets of
@@ -44,9 +42,8 @@ public:
         assert(data != nullptr);
         assert(size > 0);
 
-        std::cout << "calling with size " <<  size << '\n';
-
-        while(!m_buffer.empty() && ((m_buffer.size() + size) > m_packet_size))
+        //
+        if(!m_buffer.empty() && ((m_buffer.size() + size) > m_packet_size))
         {
             auto delta = m_packet_size - m_buffer.size();
             if (data[delta] == sync_byte())
@@ -56,20 +53,15 @@ public:
                 data += delta;
                 size -= delta;
                 handle_data(m_buffer.data());
-                m_buffer.clear();
             }
-            else
-            {
-                auto it = std::find(m_buffer.begin() + 1, m_buffer.end(), sync_byte());
-                m_buffer.erase(m_buffer.begin(), it);
-            }
+
+            m_buffer.clear();
         }
 
-        //assert(m_)
-
-        while(size > m_packet_size)
+        //
+        while(size >= m_packet_size)
         {
-            if ((data[0] == sync_byte()) && (data[m_packet_size] == sync_byte()))
+            if (data[0] == sync_byte())
             {
                 m_on_data(data, m_packet_size);
                 data += m_packet_size;
@@ -79,14 +71,21 @@ public:
             {
                 data += 1;
                 size -= 1;
-                //std::cout << "size is now" << size << " and packet size is " << m_packet_size << std::endl;
             }
         }
 
-        // save rest for later
-        m_buffer.insert(m_buffer.end(), data, data + size);
+        //
+        if (m_buffer.empty())
+        {
+            while(data[0] != sync_byte() && size > 0)
+            {
+                data += 1;
+                size -= 1;
+            }
+        }
 
-        return;
+        //
+        m_buffer.insert(m_buffer.end(), data, data + size);
 
 
         /*

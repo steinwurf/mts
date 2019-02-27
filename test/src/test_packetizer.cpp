@@ -81,27 +81,27 @@ TEST(test_packetizer, packets_of_size_187_no_offset)
     test(100, 187, 0);
 }
 
-// TEST(test_packetizer, packets_of_size_187_offset)
-// {
-//     test(100, 187, 33);
-// }
+TEST(test_packetizer, packets_of_size_187_offset)
+{
+    test(100, 187, 33);
+}
 
 TEST(test_packetizer, packets_of_size_188_no_offset)
 {
     test(100, 188, 0);
 }
 
-// TEST(test_packetizer, packets_of_size_188_offset)
-// {
-//     test(100, 188, 33);
-// }
+TEST(test_packetizer, packets_of_size_188_offset)
+{
+    test(100, 188, 33);
+}
 
 TEST(test_packetizer, packets_of_size_1490_no_offset)
 {
     test(100, 1490, 0);
 }
 
-// TEST(test_packetizer, packets_of_size_1490_offset)
-// {
-//     test(100, 1490, 33);
-// }
+TEST(test_packetizer, packets_of_size_1490_offset)
+{
+    test(100, 1490, 33);
+}
