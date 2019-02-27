@@ -86,6 +86,10 @@ public:
             }
         }
 
+        // Any data left to proccess?
+        if (size == 0)
+            return;
+
         // If the buffer already contains data, we don't need a sync byte.
         if (m_buffer.empty())
         {
