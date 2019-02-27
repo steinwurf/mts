@@ -38,15 +38,22 @@ std::vector<uint8_t> generate_ts_packets(uint32_t ts_packets, uint32_t offset)
     return buffer;
 }
 
+template <typename T>
+std::vector<T> flatten(const std::vector<std::vector<T>>& in)
+{
+    std::vector<T> out;
+    for (const auto& v : in)
+        std::copy(v.begin(), v.end(), std::inserter(out, out.end()));
+    return out;
+}
+
 void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
 {
-    srand(static_cast<uint32_t>(time(0)));
-
-    std::vector<uint8_t> result;
+    std::vector<std::vector<uint8_t>> result;
     mts::packetizer packetizer([&result](auto data, auto size)
     {
         EXPECT_EQ(mts::packetizer::sync_byte(), data[0]);
-        result.insert(result.end(), data, data + size);
+        result.push_back({data, data + size});
     });
 
     // Generate packets
@@ -70,9 +77,26 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
             ts_data.begin() + data_offset, ts_data.end() - packetizer.buffered()
         };
 
+    std::vector<std::vector<uint8_t>> expected_packets;
+
+    auto it = expected_data.cbegin();
+    while (it != expected_data.cend())
+    {
+        expected_packets.push_back({it, it + 188});
+        it += 188;
+    }
+
     EXPECT_NE(0U, result.size());
-    EXPECT_EQ(expected_data.size(), result.size());
-    EXPECT_EQ(expected_data, result);
+
+    EXPECT_EQ(expected_packets.size(), result.size());
+    auto packet_id = 0;
+    for (auto expected_packet : expected_packets)
+    {
+        EXPECT_EQ(expected_packet, result[packet_id]);
+        packet_id++;
+    }
+    EXPECT_EQ(expected_packets, result);
+    EXPECT_EQ(expected_data, flatten(result));
 }
 }
 
