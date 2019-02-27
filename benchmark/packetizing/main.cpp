@@ -71,7 +71,7 @@ public:
             m_packet_size = cs.get_value<uint16_t>("packet_size");
         }
     }
-    
+
     void test_body() override
     {
         RUN

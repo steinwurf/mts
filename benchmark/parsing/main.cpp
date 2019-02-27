@@ -56,7 +56,7 @@ public:
 
         add_configuration(cs);
     }
-    
+
     void setup() override
     {
         if (m_buffer.empty())
