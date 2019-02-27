@@ -56,35 +56,45 @@ public:
         add_configuration(cs);
     }
 
+    void setup() override
+    {
+        if (m_buffer.empty())
+        {
+            gauge::config_set cs = get_current_configuration();
+            auto filename = cs.get_value<std::string>("filename");
+            boost::iostreams::mapped_file_source file;
+            file.open(filename);
+            assert(file.is_open());
+            m_buffer.insert(m_buffer.begin(), file.data(), file.data() + file.size());
+            file.close();
+
+            m_packet_size = cs.get_value<uint16_t>("packet_size");
+        }
+    }
+    
     void test_body() override
     {
-        gauge::config_set cs = get_current_configuration();
-        auto filename = cs.get_value<std::string>("filename");
-        boost::iostreams::mapped_file_source file;
-        file.open(filename);
-        assert(file.is_open());
-        std::vector<uint8_t> buffer(file.data(), file.data() + file.size());
-        file.close();
-
-        auto packet_size = cs.get_value<uint16_t>("packet_size");
-
-        mts::packetizer packetizer([](auto data, auto size)
-        {
-            assert(data != nullptr);
-            assert(size != 0U);
-            assert(data[0] == 0x47);
-        });
-        const auto packets = buffer.size() / packet_size;
-        uint64_t offset = 0;
         RUN
         {
-            for (uint32_t i = 0; i < packets; ++i)
+            mts::packetizer packetizer([](auto data, auto size)
             {
-                packetizer.read((uint8_t*)buffer.data() + offset, packet_size);
-                offset += packet_size;
+                assert(data != nullptr);
+                assert(size != 0U);
+                assert(data[0] == 0x47);
+            });
+            uint64_t offset = 0;
+            for (uint32_t i = 0; i < m_buffer.size() / m_packet_size; ++i)
+            {
+                packetizer.read(m_buffer.data() + offset, m_packet_size);
+                offset += m_packet_size;
             }
         }
     }
+
+private:
+
+    std::vector<uint8_t> m_buffer;
+    uint16_t m_packet_size = 0;
 };
 
 BENCHMARK_F(parsing_benchmark, parsing, h264, 10);
@@ -97,7 +107,7 @@ BENCHMARK_OPTION(arithmetic_options)
     gauge::po::options_description options;
 
     options.add_options()
-    ("filename", gauge::po::value<std::string>()->required(),
+    ("filename", gauge::po::value<std::string>()->default_value("test.ts"),
      "Set the file name")
     ("packet_size", gauge::po::value<uint16_t>()->default_value(1490U),
      "Packet size");
