@@ -47,7 +47,7 @@ public:
         assert(size > 0);
 
         // If leftover data and the incoming data is enough to release a packet
-        if(!m_buffer.empty() && ((m_buffer.size() + size) > packet_size()))
+        if (!m_buffer.empty() && ((m_buffer.size() + size) > packet_size()))
         {
             // The amount missing in the buffer to constitute a complete packet
             auto delta = packet_size() - m_buffer.size();
@@ -68,7 +68,7 @@ public:
         }
 
         // Release as many packets as possible.
-        while(size >= packet_size())
+        while (size >= packet_size())
         {
             // Check that the data is valid
             if (data[0] == sync_byte())
@@ -90,7 +90,7 @@ public:
         if (m_buffer.empty())
         {
             // Look a sync byte or end of data
-            while(data[0] != sync_byte() && size > 0)
+            while (data[0] != sync_byte() && size > 0)
             {
                 data += 1;
                 size -= 1;
