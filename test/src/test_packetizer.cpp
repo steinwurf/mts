@@ -89,27 +89,25 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
     EXPECT_NE(0U, results.size());
     ASSERT_LE(results.size(), expected_packets.size());
 
-    auto diff = expected_packets.size() - results.size();
-    expected_packets.erase(expected_packets.begin(), expected_packets.begin() + diff);
-
-    EXPECT_EQ(expected_packets.size(), results.size());
-
-    uint32_t packet_id = 0;
+    // offset the expected packets with the received packets.
+    uint32_t packet_id = expected_packets.size() - results.size();
     bool sync = false;
     for (auto result : results)
     {
-        auto& expected_packet = expected_packets[packet_id];
+        auto& expected_packet = expected_packets.at(packet_id);
         if (!sync && expected_packet == result)
         {
-            // We should not use more than 2 packets to get in sync.
-            EXPECT_LE(packet_id, 2U);
+            // We should not use more than 3 packets to get in sync.
+            // This can happen but it should be very unlikely, as it requires
+            // the sync bytes to be placed
+            EXPECT_LE(packet_id, 3U);
             sync = true;
         }
         if (sync)
         {
-            EXPECT_EQ(expected_packet[0], result[0]);
-            EXPECT_EQ(expected_packet[1], result[1]);
-            EXPECT_EQ(expected_packet[187], result[187]);
+            EXPECT_EQ(expected_packet.at(0), result.at(0));
+            EXPECT_EQ(expected_packet.at(1), result.at(1));
+            EXPECT_EQ(expected_packet.at(187), result.at(187));
             EXPECT_EQ(expected_packet, result);
         }
         packet_id += 1;
