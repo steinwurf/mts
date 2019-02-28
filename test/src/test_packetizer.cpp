@@ -69,7 +69,7 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
         data_to_read += udp_packet_size;
     }
 
-    ASSERT_LT(packetizer.buffered(), 188);
+    ASSERT_LT(packetizer.buffered(), 188U);
 
     // shorten data to not include whatever the packetizer has buffered.
     std::vector<uint8_t> expected_data =
@@ -102,7 +102,7 @@ void test(uint32_t ts_packets, uint32_t udp_packet_size, uint32_t data_offset)
         if (!sync && expected_packet == result)
         {
             // We should not use more than 2 packets to get in sync.
-            EXPECT_LE(packet_id, 2);
+            EXPECT_LE(packet_id, 2U);
             sync = true;
         }
         if (sync)
