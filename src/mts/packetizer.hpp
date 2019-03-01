@@ -105,7 +105,7 @@ public:
         m_buffer.clear();
     }
 
-    uint64_t buffered()
+    uint64_t buffered() const
     {
         return m_buffer.size();
     }
