@@ -22,15 +22,16 @@ public:
 
 public:
 
-    constexpr static uint64_t packet_size()
-    {
-        return 188;
-    }
-
-    constexpr static uint8_t sync_byte()
+    static uint8_t sync_byte()
     {
         return 0x47;
     }
+
+    static uint64_t packet_size()
+    {
+        return 188U;
+    }
+
 public:
 
     packetizer(on_data_callback on_data) :
@@ -42,84 +43,61 @@ public:
     void read(const uint8_t* data, uint64_t size)
     {
         assert(data != nullptr);
-        assert(size != 0);
+        assert(size > 0);
 
-        uint64_t offset = 0;
-
-        // Fill remaining buffer
-        if (!m_buffer.empty())
+        // If leftover data and the incoming data is enough to release a packet
+        if (!m_buffer.empty() && ((m_buffer.size() + size) > packet_size()))
         {
-            auto missing = packet_size() - m_buffer.size();
+            // The amount missing in the buffer to constitute a complete packet
+            auto delta = packet_size() - m_buffer.size();
 
-            if (missing > size)
-                missing = size;
-
-            m_buffer.insert(m_buffer.end(), data, data + missing);
-
-            if (m_buffer.size() < packet_size())
+            // Is this a valid packet?
+            if (data[delta] == sync_byte())
             {
-                // Not enough data available
-                return;
-            }
+                // Add to buffer
+                m_buffer.insert(m_buffer.end(), data, data + delta);
+                data += delta;
+                size -= delta;
 
-            if (verify(m_buffer.data()))
-            {
-                offset = missing;
+                // Release packet
+                m_on_data(m_buffer.data(), m_buffer.size());
             }
-            else
-            {
-                // Buffer invalid
-                m_buffer.clear();
-            }
-        }
-
-        // Find offset
-        while ((size - offset) > 1)
-        {
-            assert(offset < size);
-            if (verify(data + offset))
-            {
-                break;
-            }
-
-            offset++;
-            if (!m_buffer.empty())
-            {
-                // buffer is probably corrupted.
-                m_buffer.clear();
-                offset = 0;
-            }
-        }
-
-        // Read buffer
-        if (!m_buffer.empty())
-        {
-            assert(verify(m_buffer.data()));
-            assert(m_buffer.size() == packet_size());
-            handle_data(m_buffer.data());
+            // Either the buffer was released or invalid
             m_buffer.clear();
         }
 
-        // Read remaining
-        auto remaining_ts_packets = (size - offset) / packet_size();
-        for (uint32_t i = 0; i < remaining_ts_packets; i++)
+        // Release as many packets as possible.
+        while (size >= packet_size())
         {
-            if (verify(data + offset))
+            // Check that the data is valid
+            if (data[0] == sync_byte())
             {
-                handle_data(data + offset);
+                // Release packet
+                m_on_data(data, packet_size());
+                data += packet_size();
+                size -= packet_size();
             }
             else
             {
-                // Corrupted package?
+                // Didn't find sync byte, advance the buffer
+                data += 1;
+                size -= 1;
             }
-            offset += packet_size();
         }
 
-        // Buffer remaining
-        assert(m_buffer.empty());
-        if (offset == size)
-            return;
-        m_buffer.insert(m_buffer.begin(), data + offset, data + size);
+        // If the buffer already contains data, we don't need a sync byte.
+        if (m_buffer.empty())
+        {
+            // Look for end of data or sync byte
+            while (size > 0 && data[0] != sync_byte())
+            {
+                data += 1;
+                size -= 1;
+            }
+        }
+
+        // Store the data to be used for next call to read.
+        m_buffer.insert(m_buffer.end(), data, data + size);
     }
 
     void reset()
@@ -130,20 +108,6 @@ public:
     uint64_t buffered() const
     {
         return m_buffer.size();
-    }
-
-private:
-
-    inline bool verify(const uint8_t* data) const
-    {
-        assert(data != nullptr);
-        return data[0] == sync_byte();
-    }
-
-    void handle_data(const uint8_t* data) const
-    {
-        assert(verify(data));
-        m_on_data(data, packet_size());
     }
 
 private:
