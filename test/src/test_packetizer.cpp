@@ -5,6 +5,8 @@
 
 #include <mts/packetizer.hpp>
 
+#include <algorithm>
+
 #include <gtest/gtest.h>
 
 namespace
