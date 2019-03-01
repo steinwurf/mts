@@ -86,15 +86,11 @@ public:
             }
         }
 
-        // Any data left to proccess?
-        if (size == 0)
-            return;
-
         // If the buffer already contains data, we don't need a sync byte.
         if (m_buffer.empty())
         {
-            // Look a sync byte or end of data
-            while (data[0] != sync_byte() && size > 0)
+            // Look for end of data or sync byte
+            while (size > 0 && data[0] != sync_byte())
             {
                 data += 1;
                 size -= 1;
