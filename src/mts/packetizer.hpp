@@ -19,7 +19,7 @@ class packetizer
 {
 public:
 
-    using on_data_callback = std::function<void(const uint8_t*,uint32_t)>;
+    using on_data_callback = std::function<void(const uint8_t*,uint64_t)>;
 
 public:
 
@@ -28,7 +28,7 @@ public:
         return 0x47;
     }
 
-    static uint32_t packet_size()
+    static uint64_t packet_size()
     {
         return 188U;
     }
@@ -41,7 +41,7 @@ public:
         assert(m_on_data);
     }
 
-    void read(const uint8_t* data, uint32_t size)
+    void read(const uint8_t* data, uint64_t size)
     {
         assert(data != nullptr);
         assert(size > 0);
@@ -110,7 +110,7 @@ public:
         m_buffer.clear();
     }
 
-    uint32_t buffered()
+    uint64_t buffered()
     {
         return m_buffer.size();
     }
