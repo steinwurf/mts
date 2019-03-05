@@ -165,9 +165,9 @@ public:
     {
         m_programs.clear();
         m_stream_states.clear();
-
-        m_pes_pid = 0;
         m_pes.reset();
+        m_pes_pid = 0;
+        m_continuity_errors = 0;
     }
 
     bool has_pes() const
