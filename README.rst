@@ -2,6 +2,9 @@
 mts
 ===
 
+.. image:: https://travis-ci.org/steinwurf/mts.svg?branch=master
+    :target: https://travis-ci.org/steinwurf/mts
+    
 mts is a library for parsing mpegts files and streams.
 
 .. contents:: Table of Contents:
