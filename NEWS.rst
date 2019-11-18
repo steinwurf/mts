@@ -6,7 +6,7 @@ every change, see the Git log.
 
 Latest
 ------
-* tbd
+* Major: Upgrade to boost 4 and gauge 12.
 
 6.0.0
 -----
