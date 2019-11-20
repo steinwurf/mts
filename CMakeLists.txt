@@ -36,6 +36,3 @@ target_link_libraries(mts
 target_include_directories(mts INTERFACE src)
 
 target_compile_features(mts INTERFACE cxx_std_11)
-
-add_executable(mpegts_inspect ./examples/mpegts_inspect.cpp)
-target_link_libraries(mpegts_inspect steinwurf::mts)
