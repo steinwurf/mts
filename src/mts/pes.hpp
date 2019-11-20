@@ -170,7 +170,7 @@ public:
             return boost::none;
 
         pes.m_payload_data = packet_reader.remaining_data();
-        pes.m_payload_size = packet_reader.remaining_size();
+        pes.m_payload_size = (uint32_t)packet_reader.remaining_size();
 
         return pes;
     }
