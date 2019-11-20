@@ -4,7 +4,7 @@ mts
 
 .. image:: https://travis-ci.org/steinwurf/mts.svg?branch=master
     :target: https://travis-ci.org/steinwurf/mts
-    
+
 mts is a library for parsing mpegts files and streams.
 
 .. contents:: Table of Contents:
@@ -69,3 +69,14 @@ You can test this example like so::
 Playback the extracted aac data with vlc like so::
 
     cvlc out.aac -v --no-loop --play-and-exit
+
+Use as Dependency in CMake
+--------------------------
+
+To depend on this project when using the CMake build system, add the following
+in your CMake build script::
+
+   add_subdirectory("/path/to/mts" mts)
+   target_link_libraries(<my_target> steinwurf::mts)
+
+Where ``<my_target>`` is replaced by your target.
