@@ -31,10 +31,24 @@ int main(int argc, char* argv[])
 
     mts::parser parser;
     std::vector<uint8_t> packet(mts::parser::packet_size());
-
+    auto header = 42;
+    auto current_packet = 0;
+    auto total_loss = 0;
+    auto losses = 0;
+    auto current_packet_size = header;
     std::map<mts::stream_type, uint32_t> stream_types;
     for (uint32_t i = 0; i < size / packet.size(); ++i)
     {
+        current_packet_size += packet.size();
+        if (current_packet_size >= 1370)
+        {
+            current_packet_size = current_packet_size % 1370;
+            current_packet_size += header;
+            std::cout << current_packet << "," << std::endl;
+            current_packet += 1 + losses;
+            losses = 0;
+        }
+
         file.read((char*)packet.data(), packet.size());
         std::error_code error;
         parser.read(packet.data(), error);
@@ -49,6 +63,11 @@ int main(int argc, char* argv[])
             }
             stream_types[type]++;
         }
+        if (parser.continuity_errors() != total_loss)
+        {
+            losses += 1;
+            total_loss = parser.continuity_errors();
+        }
     }
     if (stream_types.size() == 0)
     {
@@ -62,6 +81,8 @@ int main(int argc, char* argv[])
         auto count = item.second;
         std::cout << mts::stream_type_to_string(type) << ": " << count << std::endl;
     }
+
+    std::cout << "losses: " << parser.continuity_errors() << std::endl;
 
     return 0;
 }
