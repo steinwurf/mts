@@ -76,16 +76,17 @@ public:
             if (has_stream_state(pid))
             {
                 auto& stream_state = m_stream_states.at(pid);
-                auto expected_counter =
+                auto expected =
                     (stream_state->m_last_continuity_counter + 1) % 16;
-
-                if (ts_packet.continuity_counter() != expected_counter)
+                auto loss = helper::continuity_loss_calculation(
+                    expected, ts_packet.continuity_counter());
+                if (loss != 0)
                 {
-                    m_continuity_errors += 1;
+                    m_continuity_errors += loss;
                     m_stream_states.erase(pid);
                     return;
                 }
-                stream_state->m_last_continuity_counter = expected_counter;
+                stream_state->m_last_continuity_counter = expected;
             }
 
             // extract data and create state

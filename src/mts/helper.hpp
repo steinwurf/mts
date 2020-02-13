@@ -21,5 +21,15 @@ struct helper
         writer.field<3>(ts_14_0);
         return writer.data();
     }
+
+    static uint8_t continuity_loss_calculation(uint8_t expected, uint8_t actual)
+    {
+        assert(actual < 16U);
+        assert(expected < 16U);
+        if (actual == expected) return 0U;
+        if (actual < expected) actual += 16U;
+        assert(actual > expected);
+        return actual - expected;
+    }
 };
 }
