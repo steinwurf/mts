@@ -9,6 +9,8 @@ if(NOT DEFINED STEINWURF_RESOLVE)
     set(STEINWURF_RESOLVE "${CMAKE_CURRENT_SOURCE_DIR}/resolve_symlinks")
 endif()
 
+file(GLOB mts_headers ./src/mts/*.hpp)
+
 add_library(mts INTERFACE)
 add_library(steinwurf::mts ALIAS mts)
 
@@ -36,3 +38,5 @@ target_link_libraries(mts
 target_include_directories(mts INTERFACE src)
 
 target_compile_features(mts INTERFACE cxx_std_11)
+
+install(FILES ${mts_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/mts)
