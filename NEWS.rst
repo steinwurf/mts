@@ -6,11 +6,11 @@ every change, see the Git log.
 
 Latest
 ------
-* tbd
+* Minor: Added install step to CMake.
 
 7.1.0
 -----
-* Minor: Added cmake build file.
+* Minor: Added CMake build file.
 
 7.0.0
 -----
